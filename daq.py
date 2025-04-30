@@ -6,7 +6,7 @@ import importlib
 
 DEFAULT_OUT = "out"
 
-TOOLS_FOLDER = "analysis.tools"
+TOOLS_FOLDER = "analysis/tools"
 
 DAQ_ASCII_LOGO = """
             EFFFFE            
@@ -65,7 +65,8 @@ def main():
         subcommand_name = subcommand_name.split(os.path.sep)[-1]
 
         # Build module path: 'daq.daq_foo'
-        module_path = tool_name.replace(os.path.sep, ".")
+        module_path = tool_name.replace("/", ".")
+        module_path = module_path.replace("\\", ".")
         print(f"Importing module: {module_path}")
 
         # Import the module

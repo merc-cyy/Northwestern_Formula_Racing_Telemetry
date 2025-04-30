@@ -6,15 +6,17 @@ import sys
 def register_subparser(subparser):
     subparser.add_argument(
         "input",
-        type="str",
+        type=str,
         help="The path/directory of the data files"
     )
 
-    subparser.add_arguement(
+    subparser.add_argument(
         "out",
-        type="str",
+        type=str,
         help="The directory to store the output"
     )
+
+
 
 def transform_file(file: str):
     print(f"Transforming file {file}")
