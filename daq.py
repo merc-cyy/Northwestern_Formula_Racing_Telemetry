@@ -2,10 +2,19 @@ from analysis.common.parser_registry import (
     ParserRegistry
 )
 import argparse
+import sys
+import os
 
 DEFAULT_OUT = "out"
 
 def main():
+    # Get the directory of the current script
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Add the project root directory to sys.path
+    project_root = os.path.abspath(os.path.join(current_dir, ".."))
+    sys.path.append(project_root)
+
     parser = argparse.ArgumentParser(
         description="Analysis CLI Tool for NFR25"
     )
@@ -26,8 +35,8 @@ def main():
     print(f"Found {len(parser_types)} parsers!")
     
     for pt in parser_types:
-        print(f"- {pt.schema_name} v{pt.version}")
-        
+        print(f" - {pt.schema_name} v{pt.version}")
+
 
 
 if __name__ == "__main__":
