@@ -1,5 +1,12 @@
-import argparse
+from analysis.common.parser_registry import (
+    ParserRegistry
+)
 
+from analysis.common.car_db import (
+    CarDB
+)
+
+import argparse
 import os
 import sys
 
@@ -17,9 +24,9 @@ def register_subparser(subparser):
     )
 
 
-
-def transform_file(file: str):
-    print(f"Transforming file {file}")
+def transform_file(filename: str):
+    print(f"Transforming file {filename}")
+    db = ParserRegistry.parse(filename)
 
 def main(args):
     data_path = args.input
@@ -27,6 +34,7 @@ def main(args):
     if not os.path.exists(args):
         print(f"Input path {data_path} does not exist!")
         return
+    
 
     # check if this is a directory or a file path
     if os.path.isdir(data_path):
