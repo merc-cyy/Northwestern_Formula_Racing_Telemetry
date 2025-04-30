@@ -3,7 +3,8 @@ from typing import List, Optional
 import numpy as np
 
 # ——— Constants ———
-BMS_CELL_COUNT = 12
+BMS_TEMP_VOLTAGE_COUNT = 140
+BMS_TEMP_CELL_COUNT = 80
 GPS_COORDS = 2  # e.g. lat, lon
 
 # ——— Python dataclasses for your domain objects ———
@@ -144,8 +145,8 @@ dynamics_dtype = np.dtype(
 
 bms_dtype = np.dtype(
     [
-        ("cell_temps", "f4", BMS_CELL_COUNT),
-        ("cell_voltages", "f4", BMS_CELL_COUNT),
+        ("cell_temps", "f4", BMS_TEMP_CELL_COUNT),
+        ("cell_voltages", "f4", BMS_TEMP_VOLTAGE_COUNT),
         ("soe_max_discharge_current", "f4"),
         ("soe_max_regen_current", "f4"),
         ("soe_bat_temp", "f4"),
