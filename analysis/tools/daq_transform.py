@@ -18,14 +18,11 @@ def transform_file(input_path: str, output_path: str):
 
     print(f"Transforming {input_path!r} → {output_path!r}")
     db = ParserRegistry.parse(input_path)
+    if db == None:
+        print(f"Something went wrong while parsing {input_path!r}")
+        return
 
-    # TODO: write `db` to output_path.
-    # e.g.:
-    # with open(output_path, 'w') as f:
-    #     f.write(db.to_json())
-    #
-    # Or if you want to change the extension:
-    # output_path = output_path.rsplit('.', 1)[0] + '.json'
+    db.to_csv(output_path)
 
 
 def main(args):
@@ -49,15 +46,25 @@ def main(args):
         for root, _, files in os.walk(data_path):
             for name in files:
                 src = os.path.join(root, name)
-                # get the path relative to the input root:
+                # path under the input root
                 rel = os.path.relpath(src, data_path)
-                dst = os.path.join(output_root, rel)
+                # change extension to .csv
+                rel_csv = os.path.splitext(rel)[0] + ".csv"
+                dst = os.path.join(output_root, rel_csv)
+
+                # make sure the output subdir exists
+                os.makedirs(os.path.dirname(dst), exist_ok=True)
 
                 transform_file(src, dst)
 
     elif os.path.isfile(data_path):
-        # single‐file case: keep the same filename
-        dst = os.path.join(output_root, os.path.basename(data_path))
+        # change basename to .csv
+        base_csv = os.path.splitext(os.path.basename(data_path))[0] + ".csv"
+        dst = os.path.join(output_root, base_csv)
+
+        # ensure output directory exists
+        os.makedirs(os.path.dirname(dst), exist_ok=True)
+
         transform_file(data_path, dst)
 
     else:
