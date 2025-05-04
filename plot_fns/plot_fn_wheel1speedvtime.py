@@ -3,7 +3,7 @@ from plotly.subplots import make_subplots
 import pandas as pd
 import numpy as np
 
-def main(car_db, filepath):
+def wheel1speedvtime(car_db, filepath):
     """ 
     Args:
     the db with data 
@@ -19,7 +19,7 @@ def main(car_db, filepath):
 
     # Iterate through all snapshots in the CarDB
     duration = len(car_db._db)
-    print(f"NUMBER OF RECORDS:{duration}")
+   #print(f"NUMBER OF RECORDS:{duration}")
     for idx in range(len(car_db._db)):#the numebr of records?
         snapshot = car_db.raw_record(idx)
         #print(snapshot)
@@ -42,16 +42,16 @@ def main(car_db, filepath):
     # 3. Save the Plot as an HTML File
     try:
         fig.write_html(filepath)
-        print(f"Interactive wheel speed vs time plot saved to {filepath}")
+       #print(f"Interactive wheel speed vs time plot saved to {filepath}")
     except Exception as e:
         print(f"Error saving plot: {e}")
 
 
-# def main(database, arg_path):
-#     """  
-#     function to be executed
+def main(database, arg_path):
+    """  
+    function to be executed
 
-#     """
-#     wheel1speedvtime(car_db=database, filepath=arg_path)
+    """
+    wheel1speedvtime(car_db=database, filepath=arg_path)
 
 

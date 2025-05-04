@@ -17,7 +17,7 @@ GPS_COORDS = 2  # e.g. lat, lon
 
 
 def getlen_csv(filepath: str):
-    
+
     # length = 0
     # with open(filepath, 'r') as f:
     #     read = csv.reader(f)
@@ -55,7 +55,7 @@ def csv_to_db(csvfilepath: str):
     if not entries:
         print("Error getting length of csv")
         return
-    print(f"LENGTH OF CSV:{entries}")
+    #print(f"LENGTH OF CSV:{entries}")
     db = CarDB(entries)#init DB iwth the number of snapshots
 
     #read in the csv line by line
