@@ -99,6 +99,4 @@ class FrontDAQParser(BaseParser):#the pasring implementation that takes from the
                 # all other fields (suspension, IMU, GPS, PDM amps, inverter, etc.)
                 # remain at their default zero values
 
-        return db#our db is done!
-        #Many thanks to Evan!
-        #~Interface Team
+        return db
