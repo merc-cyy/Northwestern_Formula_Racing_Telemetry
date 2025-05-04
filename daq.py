@@ -57,7 +57,7 @@ def main():#runs in the command line
 
     # Dynamically import each sub-tool and let it register its subparser
     for tool_file in tool_files:#lop through the subpaths
-        tool_name = tool_file[:-3]  # remove .py
+        tool_name = tool_file[:-3]  # remove .py #daq_transform.py
         # Convert 'daq_foo.py' → subcommand name 'foo'
         subcommand_name = tool_name.replace("daq_", "")#remove the daq_
 
@@ -65,8 +65,8 @@ def main():#runs in the command line
         ## If the tool is in a subdirectory (e.g., daq/utils/daq_bar.py), we only want the final part ('bar') as the subcommand name
         subcommand_name = subcommand_name.split(os.path.sep)[-1]#bar
 
-        # Build module path: 'daq.daq_foo'
-        module_path = tool_name.replace("/", ".")
+        # Build module path:toolname: analysis/common/daq_transform
+        module_path = tool_name.replace("/", ".")#analysis.common.daq_transform
         module_path = module_path.replace("\\", ".")
         print(f"Importing module: {module_path}")#so this helps you load the files by converting the paths to modules
 
