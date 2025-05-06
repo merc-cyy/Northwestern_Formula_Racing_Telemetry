@@ -11,7 +11,7 @@ def plot_coolant_data(car_db):
     coolant_flow = []
 
     # Iterate through all snapshots in the CarDB
-    for idx in range(len(car_db._db)):#the numebr of records?
+    for idx in range(len(car_db._db)):
         snapshot = car_db.get_snapshot(idx)
         print(snapshot)
         time_since_startup.append(snapshot.time.time_since_startup)
