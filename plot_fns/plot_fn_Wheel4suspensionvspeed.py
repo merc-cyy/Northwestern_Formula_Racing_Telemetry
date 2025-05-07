@@ -15,10 +15,8 @@ def main(car_db, filepath):
     """
 
     # Initialize lists to store data
-    prstrain1 = []
-    prstrain2 = []
-    prstrain3 = [] 
-    prstrain4 = []
+    raw_displacement = []
+    wheel_displacement = []
     speed = []
 
     # Iterate through all snapshots in the CarDB
@@ -28,33 +26,30 @@ def main(car_db, filepath):
         snapshot = car_db.raw_record(idx)
 
         speed.append(snapshot['dynamics']['imu']['vel'][0])
-        prstrain1.append(snapshot['corners'][0]['pr_strain'])
-        prstrain2.append(snapshot['corners'][1]['pr_strain'])
-        prstrain3.append(snapshot['corners'][2]['pr_strain'])
-        prstrain4.append(snapshot['corners'][3]['pr_strain'])
+        raw_displacement.append(snapshot['corners'][3]['raw_sus_displacement'])
+        wheel_displacement.append(snapshot['corners'][3]['wheel_displacement'])
+
 
 
     
     # times = np.arange(0,duration,1)
 
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=speed, y=prstrain1, name="Wheel 1 PR Strain", mode='lines'))
-    fig.add_trace(go.Scatter(x=speed, y=prstrain2, name="Wheel 2 PR Strain", mode='lines'))
-    fig.add_trace(go.Scatter(x=speed, y=prstrain3, name="Wheel 3 PR Strain", mode='lines'))
-    fig.add_trace(go.Scatter(x=speed, y=prstrain4, name="Wheel 4 PR Strain", mode='lines'))
+    fig.add_trace(go.Scatter(x=speed, y=raw_displacement, name="Wheel 4 Raw Sus Displacement", mode='lines'))
+    fig.add_trace(go.Scatter(x=speed, y=wheel_displacement, name="Wheel 4 Wheel Sus Displacement", mode='lines'))
 
 
     # Update layout
     fig.update_layout(
-        title="Pull Rod Strain vs Speed",
+        title="Suspension Displacement vs Speed for Wheel 4",
         xaxis_title="Speed",
-        yaxis_title="PR Strain",
+        yaxis_title="Suspension Displacement",
         template="plotly_dark",
     )
 
     # 3. Save the Plot as an HTML File
     try:
         fig.write_html(filepath)
-        print(f"Pull Rod Strain vs Speed plot saved to {filepath}")
+        print(f"Suspension Displacement vs Speed for Wheel 4 plot saved to {filepath}")
     except Exception as e:
         print(f"Error saving plot: {e}")
