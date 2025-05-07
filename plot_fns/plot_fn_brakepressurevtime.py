@@ -31,8 +31,8 @@ def brakepressurevtime(car_db, filepath):
 
     times = np.arange(0,duration,1)
     fig = go.Figure()
-    fig.add_trace(go.Scatter(x=times, y=[brakepressure1,brakepressure2], name="brake_pressure", mode='lines'))
-
+    fig.add_trace(go.Scatter(x=times, y=brakepressure1, name="Front Brake Pressure", mode='lines'))
+    fig.add_trace(go.Scatter(x=times, y=brakepressure2, name="Rear Brake Pressure", mode='lines'))
 
     # Update layout
     fig.update_layout(
@@ -45,7 +45,7 @@ def brakepressurevtime(car_db, filepath):
     # 3. Save the Plot as an HTML File
     try:
         fig.write_html(filepath)
-       #print(f"Interactive wheel speed vs time plot saved to {filepath}")
+       #print(f"Interactive brake pressure vs time plot saved to {filepath}")
     except Exception as e:
         print(f"Error saving plot: {e}")
 

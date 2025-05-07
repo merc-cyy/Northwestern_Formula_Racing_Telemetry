@@ -55,6 +55,6 @@ def main(car_db, filepath):
     # 3. Save the Plot as an HTML File
     try:
         fig.write_html(filepath)
-        print(f"Pull Rod Strain vs Speed plot saved to {filepath}")
+        #print(f"Pull Rod Strain vs Speed plot saved to {filepath}")
     except Exception as e:
         print(f"Error saving plot: {e}")

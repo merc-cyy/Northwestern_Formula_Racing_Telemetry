@@ -47,7 +47,7 @@ def main(car_db, filepath):
     # 3. Save the Plot as an HTML File
     try:
         fig.write_html(filepath)
-       #print(f"Interactive wheel speed vs time plot saved to {filepath}")
+       #print(f"Interactive coolant factors vs time plot saved to {filepath}")
     except Exception as e:
         print(f"Error saving plot: {e}")
 
