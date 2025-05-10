@@ -10,7 +10,7 @@ from analysis.common.parser_registry import (
 from analysis.common.car_db import CarDB
 
 
-@parser_class(ParserVersion("FrontDAQ", 0))
+@parser_class(ParserVersion("FrontDAQ", 0, 0, 0))
 class FrontDAQParser(BaseParser):
     @staticmethod
     def parse(filename: str) -> CarDB:
@@ -37,10 +37,11 @@ class FrontDAQParser(BaseParser):
         # ——— sanity-check file size ———
         total_bytes = os.path.getsize(filename)
         if total_bytes % record_size != 0:
-            raise ValueError(
+            print(
                 f"'{filename}' is {total_bytes} bytes, "
                 f"not a multiple of {record_size}"
             )
+            return
         n_records = total_bytes // record_size
 
         # ——— allocate CarDB (zeroed by default) ———

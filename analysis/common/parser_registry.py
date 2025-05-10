@@ -11,7 +11,9 @@ import analysis.common.parsers as parser_mod
 @dataclass(frozen=True)
 class ParserVersion:
     schema_name: str
-    version: int
+    major: int
+    minor: int
+    patch: int
 
 
 def parser_class(version: ParserVersion):
@@ -34,14 +36,15 @@ class BaseParser:
 
 class ParserRegistry:
     parsers: dict[ParserVersion, BaseParser] = {}
-    loaded : bool = False
+    loaded: bool = False
 
     @staticmethod
     def add_parser(version: ParserVersion, cls):
+        print(f"Adding parser: {version.schema_name} ({version.major}.{version.minor}.{version.patch})")
         ParserRegistry.parsers[version] = cls
 
     @staticmethod
-    def get_parser(version : ParserVersion):
+    def get_parser(version: ParserVersion):
         return ParserRegistry.parsers.get(version, None)
 
     @staticmethod
@@ -56,15 +59,59 @@ class ParserRegistry:
             importlib.import_module(full_module_name)
         loaded = True
 
+
+
     @staticmethod
-    def parse(filename : str) -> CarDB :
-        if ParserRegistry.loaded == False:
+    def parse(filename: str) -> CarDB:
+        """
+        Detect the file’s schema + version and dispatch to the best
+        parser we have registered.  Raises ValueError if no compatible
+        parser is found.
+        """
+        if not ParserRegistry.loaded:
             ParserRegistry.load_parsers()
 
-        # find the parser
-        # for now, just pass in the only one
-        parser = ParserRegistry.get_parser(ParserVersion("FrontDAQ", 0))
-        if parser == None:
-            return None
+        # Peek at the header (≤ 9 bytes)
+        PREAMBLE = b"NFR25"
 
-        return parser.parse(filename)
+        # assume the old version
+        parser_name = "FrontDAQ"
+        major, minor, patch = [0, 0, 0]
+
+        with open(filename, "rb") as fh:
+
+            header = fh.read(len(PREAMBLE) + 3)  # 5-byte magic + 3-byte version
+        if len(header) < len(PREAMBLE):
+            raise ValueError("File too short to contain header")
+        if not header.startswith(PREAMBLE):
+            print("Unknown or unsupported file format (missing 'NFR25'), assuming FrontDAQ parser prototype")
+        else:
+            parser_name = "NFR25"
+
+        major, minor, patch = header[len(PREAMBLE) : len(PREAMBLE) + 3]
+        requested = ParserVersion(parser_name, major, minor, patch)
+
+        # Try exact match first
+        parser_cls = ParserRegistry.get_parser(requested)
+
+        # newest parser
+        if parser_cls is None:
+            compatible = [
+                v
+                for v in ParserRegistry.get_parser_versions()
+                if v.schema_name == requested.schema_name
+                and (v.major, v.minor, v.patch)
+                <= (requested.major, requested.minor, requested.patch)
+            ]
+            if compatible:
+                best = max(compatible, key=lambda v: (v.major, v.minor, v.patch))
+                parser_cls = ParserRegistry.get_parser(best)
+
+        if parser_cls is None:
+            raise ValueError(
+                f"No parser available for schema '{requested.schema_name}' "
+                f"version {requested.major}.{requested.minor}.{requested.patch}"
+            )
+
+        # ── 4. Delegate to the chosen parser class ───────────────
+        return parser_cls.parse(filename)
