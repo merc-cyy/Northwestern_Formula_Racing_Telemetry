@@ -11,7 +11,7 @@ GPS_COORDS = 2  # e.g. lat, lon
 
 # ——— Python dataclasses for your domain objects ———
 @dataclass
-class TimeData:
+class TimeData:#Marks the TimeData class as a dataclass, automatically generating useful methods
     time_since_startup: int
     hour: int
     minute: int
@@ -20,7 +20,7 @@ class TimeData:
 
 
 @dataclass
-class CornerData:
+class CornerData:#wheel info
     wheel_speed: float
     raw_sus_displacement: float
     wheel_displacement: float
@@ -28,7 +28,7 @@ class CornerData:
 
 
 @dataclass
-class IMUData:
+class IMUData:#measures car's inertia
     accel: np.ndarray  # shape (3,)
     vel: np.ndarray  # shape (3,)
     pos: np.ndarray  # shape (3,)
@@ -46,9 +46,9 @@ class DynamicsData:
 
 
 @dataclass
-class BMSData:
-    cell_temps: np.ndarray  # (BMS_TEMP_CELL_COUNT,)
-    cell_voltages: np.ndarray  # (BMS_TEMP_VOLTAGE_COUNT,)
+class BMSData:#battery management system information
+    cell_temps: np.ndarray  # (BMS_TEMP_CELL_COUNT,) --> 80
+    cell_voltages: np.ndarray  # (BMS_TEMP_VOLTAGE_COUNT,) --> 140
     soe_max_discharge_current: float
     soe_max_regen_current: float
     soe_bat_temp: float
@@ -60,10 +60,10 @@ class BMSData:
 
 @dataclass
 class PDMData:
-    gen_amps: float
-    fan_amps: float
-    pump_amps: float
-    bat_voltage: float
+    gen_amps: float #current of the generator 
+    fan_amps: float #current of the cooling fan
+    pump_amps: float #current of the pump
+    bat_voltage: float #battery voltage
     bat_voltage_warning: bool
     gen_efuse_triggered: bool
     fan_efuse_triggered: bool
@@ -73,16 +73,16 @@ class PDMData:
 @dataclass
 class InverterData:
     rpm: float
-    motor_current: float
-    dc_voltage: float
-    dc_current: float
-    igbt_temp: float
-    motor_temp: float
-    ah_drawn: float
-    ah_charged: float
-    wh_drawn: float
-    wh_charged: float
-    fault_code: float
+    motor_current: float #current of the motor
+    dc_voltage: float#  DC voltage to the inverter
+    dc_current: float #DC current to the inverter
+    igbt_temp: float # Temperature of the IGBTs (Insulated Gate Bipolar Transistors) in the inverter 
+    motor_temp: float # temp of the motor
+    ah_drawn: float #Amp-hours drawn by the motor
+    ah_charged: float #Amp-hours charged back to the battery
+    wh_drawn: float #Watt-hours drawn by the motor
+    wh_charged: float #Watt-hours charged back to the battery by the motor 
+    fault_code: float #code indicating any fault in the inverter 
 
 
 @dataclass
@@ -95,10 +95,10 @@ class ECUData:
 
 
 @dataclass
-class CarSnapshot:
-    time: TimeData
-    corners: List[CornerData]  # length 4
-    dynamics: DynamicsData
+class CarSnapshot:#info from one record in the data (one snapshot in time)
+    time: TimeData #time data
+    corners: List[CornerData]  # length 4 wheel corner data
+    dynamics: DynamicsData 
     bms: BMSData
     pdm: PDMData
     inverter: InverterData
@@ -106,6 +106,7 @@ class CarSnapshot:
 
 
 # ——— Build the identical NumPy dtype under the hood ———
+#builds the numpy types for the data so we can do numpy functions since they are faster
 time_dtype = np.dtype(
     [
         ("time_since_startup", "u4"),
@@ -214,17 +215,17 @@ car_snapshot_dtype = np.dtype(
 # ——— The CarDB class with CSV export ———
 class CarDB:
     def __init__(self, n_snapshots: int):
-        self._db = np.zeros(n_snapshots, dtype=car_snapshot_dtype)
+        self._db = np.zeros(n_snapshots, dtype=car_snapshot_dtype)#init with all zeros of the type we initially defined
 
     def __len__(self):
         return len(self._db)
 
     def raw_record(self, idx: int) -> np.void:
-        return self._db[idx]
+        return self._db[idx]#get the record at that index
 
     def get_snapshot(self, idx: int) -> CarSnapshot:
         # ... existing get_snapshot code omitted for brevity ...
-        pass
+        pass#maybe ask about this? should convert the raw numpy data to a structured snapshot
 
     def to_csv(self, path: str) -> None:
         """
@@ -232,17 +233,17 @@ class CarDB:
         become separate columns (e.g. corners0_wheel_speed, dynamics_imu_accel_2, ...).
         """
         rows = []
-        for rec in self._db:
-            flat = {}
+        for rec in self._db:#for each record,
+            flat = {}#just a dictionary with key(the col) = value(data)
             for name in rec.dtype.names:
-                val = rec[name]
+                val = rec[name]#get the values
                 # nested structured dtype
                 if val.dtype.fields is not None:
 
-                    def flatten_struct(v, prefix):
+                    def flatten_struct(v, prefix):#flatten the subfields
                         d = {}
-                        for fn in v.dtype.names:
-                            v2 = v[fn]
+                        for fn in v.dtype.names:#iterate through the names
+                            v2 = v[fn]#get val
                             if isinstance(v2, np.ndarray):
                                 for i, x in enumerate(v2.tolist()):
                                     d[f"{prefix}_{fn}_{i}"] = x
@@ -250,7 +251,7 @@ class CarDB:
                                 d[f"{prefix}_{fn}"] = (
                                     v2.item() if hasattr(v2, "item") else v2
                                 )
-                        return d
+                        return d#returns dict with flatten data of that sub field
 
                     if isinstance(val, np.ndarray):
                         for j, sub in enumerate(val):
@@ -266,12 +267,12 @@ class CarDB:
                     else:
                         flat[name] = val.item() if hasattr(val, "item") else val
 
-            rows.append(flat)
+            rows.append(flat)#add the flattened data to the row
 
         # write CSV
         if rows:
             fieldnames = sorted(rows[0].keys())
             with open(path, "w", newline="") as csvfile:
-                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)#adds the row to the csv file
                 writer.writeheader()
                 writer.writerows(rows)

@@ -1,9 +1,9 @@
 from analysis.common.car_db import CarDB, CarSnapshot
 
-from dataclasses import dataclass
+from dataclasses import dataclass#used to generate classes that store data
 from enum import Enum
 import pkgutil
-import importlib
+import importlib#both these last two are for importing modules
 
 import analysis.common.parsers as parser_mod
 
@@ -18,27 +18,27 @@ class ParserVersion:
 
 def parser_class(version: ParserVersion):
     """
-    A decorator for marking a class as a parser.
+    A decorator for marking a class as a parser. SO it marks other classes as able to read in files
     It must inherit from BaseParser
     """
 
     def decorator(cls):
-        ParserRegistry.add_parser(version, cls)
+        ParserRegistry.add_parser(version, cls)#so it marks this class as able to read in data for this specific version
         return cls
 
     return decorator
 
 
-class BaseParser:
+class BaseParser:#this is the root class of every parser. Has the fn parse that takes in the name of the file and returns the data as organized into a Python DB
     def parse(filename: str) -> CarDB:
-        pass
+        pass#just a template that other more specific functions can follow
 
 
 class ParserRegistry:
     parsers: dict[ParserVersion, BaseParser] = {}
     loaded: bool = False
 
-    @staticmethod
+    @staticmethod#static means it belongs to only this class not all objects of this instance
     def add_parser(version: ParserVersion, cls):
         print(f"Adding parser: {version.schema_name} ({version.major}.{version.minor}.{version.patch})")
         ParserRegistry.parsers[version] = cls
@@ -49,11 +49,11 @@ class ParserRegistry:
 
     @staticmethod
     def get_parser_versions() -> list[ParserVersion]:
-        return ParserRegistry.parsers.keys()
+        return ParserRegistry.parsers.keys()#list of all parser versions currently saved
 
     @staticmethod
     def load_parsers():
-        package = parser_mod
+        package = parser_mod#all the specific parser files
         for finder, module_name, is_pkg in pkgutil.iter_modules(package.__path__):
             full_module_name = f"{package.__name__}.{module_name}"
             importlib.import_module(full_module_name)
