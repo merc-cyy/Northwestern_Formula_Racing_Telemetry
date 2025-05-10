@@ -24,7 +24,7 @@ NUM_TEMP_CELLS = 80
 NUM_VOLT_CELLS = 140
 BMS_FAULT_COUNT = 8  # summary, underV, overV, underT, overT, overI, extKill, openWire
 ECU_FAULT_COUNT = 5  # implausibility flags we care about
-PREAMBLE_LEN =  4 # 'NFR25' + 3 bytes + 4 byte record-size
+PREAMBLE_LEN =  0 # 'NFR25' + 3 bytes + 4 byte record-size
 
 
 # ─────────────────────────── DriveBusData layout ─────────────────────────
