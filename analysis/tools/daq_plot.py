@@ -66,7 +66,8 @@ def plot_file(input_path: str, output_path: str, plot_fn_path: str):
                     #for every module, pass inthe db
                     if hasattr(new_module, "main"):
                         try: 
-                            img_filename = f"{mod_filename.replace("plot_fn_", "")}.html"
+                            img_name = mod_filename.replace("plot_fn_", "")
+                            img_filename = f"{img_name}.html"
                             img_filepath = os.path.join(output_path,img_filename)
                             new_module.main(db, img_filepath)#pass in the db to each plot fn and the fn will save that plt to that path 
                             
