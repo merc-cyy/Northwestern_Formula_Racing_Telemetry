@@ -24,7 +24,7 @@ NUM_TEMP_CELLS = 80
 NUM_VOLT_CELLS = 140
 BMS_FAULT_COUNT = 8  # summary, underV, overV, underT, overT, overI, extKill, openWire
 ECU_FAULT_COUNT = 5  # implausibility flags we care about
-PREAMBLE_LEN = 9  # 'NFR25' + 3 bytes + 1 byte record-size
+PREAMBLE_LEN =  4 # 'NFR25' + 3 bytes + 4 byte record-size
 
 
 # ─────────────────────────── DriveBusData layout ─────────────────────────
@@ -52,7 +52,7 @@ assert LINE_SIZE == 1004, LINE_SIZE
 
 
 # Parser Class
-@parser_class(ParserVersion("NFR25", 0, 0, 1))
+@parser_class(ParserVersion("NFR25", 0, 0, 0))
 class FrontDAQParser(BaseParser):
     """
     Parse *.bin files written by the FrontDAQ, version 1 (5/10/25) logger and return
@@ -124,16 +124,16 @@ class FrontDAQParser(BaseParser):
     def parse(filename: str) -> CarDB:
         with open(filename, "rb") as fh:
             pre = fh.read(PREAMBLE_LEN)
-            if len(pre) < PREAMBLE_LEN or not pre.startswith(b"NFR25001"):
-                print("Missing 'NFR25001' preamble")
-                return
-            if pre[-1] != LINE_SIZE:
-                print(f"Firmware line-size {pre[-1]} ≠ parser {LINE_SIZE}")
-                return
+            # # if len(pre) < PREAMBLE_LEN or not pre.startswith(b"NFR25001"):
+            # #     print("Missing 'NFR25001' preamble")
+            # #     return
+            # if pre[-1] != LINE_SIZE:
+            #     print(f"Firmware line-size {pre[-1]} ≠ parser {LINE_SIZE}")
+            #     return
             blob = fh.read()
 
-        if len(blob) % LINE_SIZE:
-            raise ValueError("File length is not a multiple of record size")
+        # if len(blob) % LINE_SIZE:
+        #     raise ValueError("File length is not a multiple of record size")
 
         n = len(blob) // LINE_SIZE
         db = CarDB(n)

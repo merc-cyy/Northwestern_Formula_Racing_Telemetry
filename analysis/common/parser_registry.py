@@ -74,44 +74,51 @@ class ParserRegistry:
         # Peek at the header (≤ 9 bytes)
         PREAMBLE = b"NFR25"
 
-        # assume the old version
-        parser_name = "FrontDAQ"
-        major, minor, patch = [0, 0, 0]
+        # # assume the old version
+        # parser_name = "FrontDAQ"
+        # major, minor, patch = [0, 0, 0]
 
-        with open(filename, "rb") as fh:
+        # with open(filename, "rb") as fh:
+        #     header = fh.read(len(PREAMBLE) + 3)  # 5-byte magic + 3-byte version
 
-            header = fh.read(len(PREAMBLE) + 3)  # 5-byte magic + 3-byte version
-        if len(header) < len(PREAMBLE):
-            raise ValueError("File too short to contain header")
-        if not header.startswith(PREAMBLE):
-            print("Unknown or unsupported file format (missing 'NFR25'), assuming FrontDAQ parser prototype")
-        else:
-            parser_name = "NFR25"
+        
+        # if len(header) < len(PREAMBLE):
+        #     raise ValueError("File too short to contain header")
+        # if not header.startswith(PREAMBLE):
+        #     print(f"Unknown or unsupported file format (missing 'NFR25', got {header}), assuming FrontDAQ parser prototype")
+        # else:
+        #     parser_name = "NFR25"
 
-        major, minor, patch = header[len(PREAMBLE) : len(PREAMBLE) + 3]
-        requested = ParserVersion(parser_name, major, minor, patch)
+        # major, minor, patch = header[len(PREAMBLE) : len(PREAMBLE) + 3]
+        # requested = ParserVersion(parser_name, major, minor, patch)
+
+        # # Try exact match first
+        # parser_cls = ParserRegistry.get_parser(requested)
+
+        # # newest parser
+        # if parser_cls is None:
+        #     compatible = [
+        #         v
+        #         for v in ParserRegistry.get_parser_versions()
+        #         if v.schema_name == requested.schema_name
+        #         and (v.major, v.minor, v.patch)
+        #         <= (requested.major, requested.minor, requested.patch)
+        #     ]
+        #     if compatible:
+        #         best = max(compatible, key=lambda v: (v.major, v.minor, v.patch))
+        #         parser_cls = ParserRegistry.get_parser(best)
+
+        # if parser_cls is None:
+        #     raise ValueError(
+        #         f"No parser available for schema '{requested.schema_name}' "
+        #         f"version {requested.major}.{requested.minor}.{requested.patch}"
+        #     )
+
+        # Delegate to the chosen parser class
+
+        # hack cause for some reason the header isn't working
+        requested = ParserVersion("NFR25", 0, 0, 0)
 
         # Try exact match first
         parser_cls = ParserRegistry.get_parser(requested)
-
-        # newest parser
-        if parser_cls is None:
-            compatible = [
-                v
-                for v in ParserRegistry.get_parser_versions()
-                if v.schema_name == requested.schema_name
-                and (v.major, v.minor, v.patch)
-                <= (requested.major, requested.minor, requested.patch)
-            ]
-            if compatible:
-                best = max(compatible, key=lambda v: (v.major, v.minor, v.patch))
-                parser_cls = ParserRegistry.get_parser(best)
-
-        if parser_cls is None:
-            raise ValueError(
-                f"No parser available for schema '{requested.schema_name}' "
-                f"version {requested.major}.{requested.minor}.{requested.patch}"
-            )
-
-        # ── 4. Delegate to the chosen parser class ───────────────
         return parser_cls.parse(filename)
