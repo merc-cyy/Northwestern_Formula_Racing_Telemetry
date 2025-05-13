@@ -1,148 +1,158 @@
 """
 FrontDAQ   ·   binary log → CarDB
-Firmware: teensy/src/logger.cpp  (9-byte 'NFR25' preamble + 1 004-byte records)
-Parser:   FrontDAQ v1
+Firmware: teensy/src/logger.cpp  
+  (9-byte 'NFR25'+ver+preamble, then 1 032 B records)
+Parser:   FrontDAQ v1 (0.0.1)
 """
 
 from __future__ import annotations
-import os
 import struct
 import numpy as np
 
-from analysis.common.parser_registry import (
-    ParserVersion,
-    parser_class,
-    BaseParser,
-)
-from analysis.common.car_db import CarDB
+from analysis.common.parser_registry import ParserVersion, parser_class, BaseParser
+from analysis.common.car_db        import CarDB
 
 
-# ──────────────────────────────────────────────────────────────────────────
-#                       Constants – mirror the firmware
-# ──────────────────────────────────────────────────────────────────────────
-NUM_TEMP_CELLS = 80
-NUM_VOLT_CELLS = 140
-BMS_FAULT_COUNT = 8  # summary, underV, overV, underT, overT, overI, extKill, openWire
-ECU_FAULT_COUNT = 5  # implausibility flags we care about
-PREAMBLE_LEN =  0 # 'NFR25' + 3 bytes + 4 byte record-size
+NUM_TEMP_CELLS  = 80
+NUM_VOLT_CELLS  = 140
+BMS_FAULT_COUNT = 8   # summary, underV, overV, underT, overT, overI, extKill, openWire
+ECU_FAULT_COUNT = 5   # implausibility flags
+PREAMBLE_MAGIC  = b"NFR25"
+PREAMBLE_LEN    = len(PREAMBLE_MAGIC)  # =5
+VERSION_BYTES   = 3   # major, minor, patch
+SKIP_BYTES      = 1   # record-size (mod 256)
 
-
-# ─────────────────────────── DriveBusData layout ─────────────────────────
-# 13 bools  + 3 pad           = 16         (compiler padded to 4-byte boundary)
-# 22 floats                    88
-# 1 uint16  + 4 int16          10
-# 4 uint8  + 1 bool + 1 pad     6          (final pad → 120 total)
+# DriveBusData struct (total 148 B) 
 DRIVE_FMT = (
-    "8?"  # BMS faults
-    "5?"  # ECU faults
-    "3x"  # pad → align floats
-    "22f"  # hv, lv, temps, wheel speeds, etc.
-    "H"  # bmsFaultsRaw
-    "4h"  # motor rpm / currents / voltages
-    "4B"  # driveState, bmsState, imdState, inverterStatus
-    "?"  # lvVoltageWarning
-    "x"  # final pad
+    "8?"    # bmsFaults[8]
+    "5?"    # ecuFaults[5]
+    "3x"    # pad → align to 4
+    "25f"   # hvVoltage…pumpAmps (10 + 4 + 4 + 4 + 3)
+    "H"     # bmsFaultsRaw
+    "8h"    # motorRPM, motorCurrent, motorDCVoltage, motorDCCurrent,
+            # frontBrakePressure, rearBrakePressure, apps1, apps2
+    "2H"    # inverterIGBTTemp, inverterMotorTemp
+    "5B"    # driveState, bmsState, imdState, inverterStatus, bmsCommand
+    "2?"    # brakePressed, lvVoltageWarning
+    "3x"    # final pad → round up to 4-byte boundary
 )
-assert struct.calcsize("<" + DRIVE_FMT) == 120, "DriveBusData size mis-match"
+assert struct.calcsize("<" + DRIVE_FMT) == 148, "DriveBusData size mismatch"
 
-# One whole log line:  millis + Drive + 80T + 140V  = 1 004 B
-LINE_FMT = "<I" + DRIVE_FMT + f"{NUM_TEMP_CELLS + NUM_VOLT_CELLS}f"
+# ─── one full record = 4 B millis + 148 B drive + (80+140) × 4 B data = 1 032 B
+LINE_FMT  = "<I" + DRIVE_FMT + f"{NUM_TEMP_CELLS}f{NUM_VOLT_CELLS}f"
 LINE_SIZE = struct.calcsize(LINE_FMT)
-assert LINE_SIZE == 1004, LINE_SIZE
+assert LINE_SIZE == 1032, LINE_SIZE
 
 
-# Parser Class
-@parser_class(ParserVersion("NFR25", 0, 0, 0))
+@parser_class(ParserVersion("NFR25", 0, 0, 1))
 class FrontDAQParser(BaseParser):
-    """
-    Parse *.bin files written by the FrontDAQ, version 1 (5/10/25) logger and return
-    a fully-typed CarDB.
-    """
-
     @staticmethod
     def _decode_record(raw: memoryview, dest: np.void) -> None:
-        """Decode one 1 004-byte record directly into the CarDB slot."""
         vals = struct.unpack_from(LINE_FMT, raw)
         i = 0
 
-        #  time (millis since power-on)
-        dest["time"]["time_since_startup"] = vals[i]
-        i += 1
+        # ── timestamp ────────────────────────────────
+        dest["time"]["time_since_startup"] = vals[i];  i += 1
 
-        # BMS + ECU faults (13 bools)
-        dest["bms"]["faults"][:] = vals[i : i + BMS_FAULT_COUNT]
+        # ── BMS + ECU faults ─────────────────────────
+        dest["bms"]["faults"][:]           = vals[i : i + BMS_FAULT_COUNT]
         dest["ecu"]["implausibilities"][:] = vals[
             i + BMS_FAULT_COUNT : i + BMS_FAULT_COUNT + ECU_FAULT_COUNT
         ]
-        i += BMS_FAULT_COUNT + ECU_FAULT_COUNT + 0  # pad skipped by struct
+        i += BMS_FAULT_COUNT + ECU_FAULT_COUNT
 
-        # 22 floats
-        hv, lv, batT, maxT, minT, maxV, minV, maxDis, maxReg, soc, *rest = vals[
-            i : i + 22
-        ]
-        i += 22
+        # ── 25 floats: hv…pumpAmps ──────────────────
+        (
+            hv, lv, batT,
+            maxT, minT, maxV, minV,
+            maxDis, maxReg, _bmsSOC,   # SOC not in CarDB schema → ignore
+            ws0, ws1, ws2, ws3,
+            wd0, wd1, wd2, wd3,
+            ps0, ps1, ps2, ps3,
+            genAmps, fanAmps, pumpAmps
+        ) = vals[i : i + 25]
+        i += 25
 
-        dest["bms"]["soe_bat_voltage"] = hv
-        dest["pdm"]["bat_voltage"] = lv
-        dest["bms"]["soe_bat_temp"] = batT
+        # map into CarDB
+        dest["bms"]["soe_bat_voltage"]        = hv
+        dest["pdm"]["bat_voltage"]            = lv
+        dest["bms"]["soe_bat_temp"]           = batT
         dest["bms"]["soe_max_discharge_current"] = maxDis
-        dest["bms"]["soe_max_regen_current"] = maxReg
-        dest["bms"]["bms_state"] = 0  # set below
+        dest["bms"]["soe_max_regen_current"]     = maxReg
 
-        # wheelSpeeds[4] + wheelDisp[4] + prStrain[4] are in *rest*
-        ws, wd, ps = rest[0:4], rest[4:8], rest[8:12]
-        for w in range(4):
-            dest["corners"][w]["wheel_speed"] = ws[w]
-            dest["corners"][w]["wheel_displacement"] = wd[w]
-            dest["corners"][w]["pr_strain"] = ps[w]
+        # corners
+        dest["corners"][0]["wheel_speed"]        = ws0
+        dest["corners"][1]["wheel_speed"]        = ws1
+        dest["corners"][2]["wheel_speed"]        = ws2
+        dest["corners"][3]["wheel_speed"]        = ws3
+        dest["corners"][0]["wheel_displacement"] = wd0
+        dest["corners"][1]["wheel_displacement"] = wd1
+        dest["corners"][2]["wheel_displacement"] = wd2
+        dest["corners"][3]["wheel_displacement"] = wd3
+        dest["corners"][0]["pr_strain"]          = ps0
+        dest["corners"][1]["pr_strain"]          = ps1
+        dest["corners"][2]["pr_strain"]          = ps2
+        dest["corners"][3]["pr_strain"]          = ps3
 
-        #  uint16 + 4×int16 (motor info)
-        _bmsFaultsRaw, rpm, motI, dcV, dcI = vals[i : i + 5]
-        i += 5
-        dest["inverter"]["rpm"] = rpm
+        # PDM amps
+        dest["pdm"]["gen_amps"]  = genAmps
+        dest["pdm"]["fan_amps"]  = fanAmps
+        dest["pdm"]["pump_amps"] = pumpAmps
+
+        # ── 1×uint16 + 8×int16 + 2×uint16 ────────────
+        (
+            _bRaw,
+            rpm, motI, dcV, dcI,
+            fBP, rBP, app1, app2,
+            igbtT, motT
+        ) = vals[i : i + 11]
+        i += 11
+        dest["inverter"]["rpm"]           = rpm
         dest["inverter"]["motor_current"] = motI
-        dest["inverter"]["dc_voltage"] = dcV
-        dest["inverter"]["dc_current"] = dcI
+        dest["inverter"]["dc_voltage"]    = dcV
+        dest["inverter"]["dc_current"]    = dcI
+        # (frontBrakePressure, rearBrakePressure, apps, temps are
+        # not in the CarDB schema, so we skip them)
 
-        # 4×uint8 + 1 bool
-        driveState, bmsState, _imd, _invStat = vals[i : i + 4]
-        i += 4
+        # ── 5×uint8 → drive/bms states + bmsCommand ────
+        driveState, bmsState, _imd, _invSt, _bCmd = vals[i : i + 5]
+        i += 5
         dest["ecu"]["drive_state"] = driveState
-        dest["bms"]["bms_state"] = bmsState
-        dest["pdm"]["bat_voltage_warning"] = vals[i]
-        i += 1
-        # final pad consumed by struct
+        dest["bms"]["bms_state"]   = bmsState
 
-        # cell temps & voltages
-        j = i + NUM_TEMP_CELLS
-        dest["bms"]["cell_temps"][:] = vals[i:j]
-        i = j
-        j = i + NUM_VOLT_CELLS
-        dest["bms"]["cell_voltages"][:] = vals[i:j]
+        # ── 2×bool: brakePressed, lvVoltageWarning ─────
+        brake, lvWarn = vals[i : i + 2]
+        i += 2
+        dest["ecu"]["brake_pressed"]        = brake
+        dest["pdm"]["bat_voltage_warning"]  = lvWarn
+
+        # ── DataBusData: temps then volts ──────────────
+        temps = vals[i : i + NUM_TEMP_CELLS];    i += NUM_TEMP_CELLS
+        volts = vals[i : i + NUM_VOLT_CELLS]
+        dest["bms"]["cell_temps"][:]     = temps
+        dest["bms"]["cell_voltages"][:]  = volts
+
 
     @staticmethod
     def parse(filename: str) -> CarDB:
         with open(filename, "rb") as fh:
-            pre = fh.read(PREAMBLE_LEN)
-            # # if len(pre) < PREAMBLE_LEN or not pre.startswith(b"NFR25001"):
-            # #     print("Missing 'NFR25001' preamble")
-            # #     return
-            # if pre[-1] != LINE_SIZE:
-            #     print(f"Firmware line-size {pre[-1]} ≠ parser {LINE_SIZE}")
-            #     return
-            blob = fh.read()
+            # 1) magic
+            header = fh.read(PREAMBLE_LEN + VERSION_BYTES + SKIP_BYTES)
+            if not header.startswith(PREAMBLE_MAGIC):
+                raise ValueError("Missing 'NFR25' header")
+            # 2) (major,minor,patch) = header[5:8], skip record-size = header[8]
+            data = fh.read()
 
-        # if len(blob) % LINE_SIZE:
-        #     raise ValueError("File length is not a multiple of record size")
-
-        n = len(blob) // LINE_SIZE
-        db = CarDB(n)
-
-        mv = memoryview(blob)
-        for rec_idx in range(n):
-            start = rec_idx * LINE_SIZE
-            FrontDAQParser._decode_record(
-                mv[start : start + LINE_SIZE], db._db[rec_idx]
+        if len(data) % LINE_SIZE:
+            raise ValueError(
+                f"{filename}: {len(data)} bytes not a multiple of {LINE_SIZE}"
             )
+
+        n = len(data) // LINE_SIZE
+        db = CarDB(n)
+        mv = memoryview(data)
+        for idx in range(n):
+            start = idx * LINE_SIZE
+            FrontDAQParser._decode_record(mv[start : start + LINE_SIZE], db._db[idx])
 
         return db
