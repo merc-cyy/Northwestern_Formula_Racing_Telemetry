@@ -20,17 +20,19 @@ pip install -r requirements.txt
 3. Enjoy!
 
 ## Transforming Data
-
 Copy your log files into a directory (like data), then run the command:
-
 ```sh
 python daq.py transform <data_dir> <output_dir>
 ```
-
 For example:
 ```
 python daq.py transform data out
 ```
 
+## Plotting Data
+To run our app, run this command in the root folder
+```sh
+streamlit run app
+```
 
    
