@@ -30,9 +30,9 @@ python daq.py transform data out
 ```
 
 ## Plotting Data
-To run our app, run this command in the root folder
+Our interface 
 ```sh
-streamlit run app
+streamlit run app.py
 ```
 
    
