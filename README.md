@@ -42,6 +42,8 @@ Note: the --driveday and --logfile are optional. Please use them to specify the 
 - Specifying driveday and logfile means it saves a folder i.e output/log_161 which has only 31 files for all plots.
 - Specifying none means you will get a folder i.e output/ with as many folders as drivedays each with subfolders for each logfile each with ~31 plots(not good). This will DEFINITELY fill up your laptop space so I dont advise it. Instead use the *python daq.py list_files --driveday* to see what data files are available so you can plot them out.
 
+## Adding Data
+You can add more data from the car by uploading the binary files then transforming them to csvs and in the app.py file change DATA_DIR to the new directory of transformed files.
 
 ## Design Choices
 - From the results of the *Graph Please* form, we decided to plot out every plot_function for every file since we don't know which file the user might be interested in.
@@ -53,16 +55,26 @@ Naming convention: brakepressurevtime.html (one plotted file)
 - In case you don't want to download the plots, you are welcome to use the visual interface. (Described below:)
 
 
+## Deployment
+Currently deployed using streamlit with continuous integration from:
+ https://github.com/merc-cyy/daq-analysis-25 *(fork of https://github.com/NU-Formula-Racing/daq-analysis-25)*
+
+
 ## Visual interface 
-- Install streamlit first
+
+#### Local setup
+- Fork this repo
+- Install streamlit 
 ```sh
 pip install streamlit
 ```
-
-- Run this command
+- Run this command in root directory
 ```sh
 streamlit run app.py
 ```
+
+#### Live website
+https://nfr25interface.streamlit.app/ 
 
 
 
