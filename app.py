@@ -156,30 +156,45 @@ def main():
             plot_configs = []  # List to store plot configurations
             show_plots = False #flag
 
-            # Create a 2x2 grid for plot input
-            cols = st.columns(2)
-            rows = [cols[i % 2] for i in range(num_plots)]
+            if num_plots > 1:
+                # Create a 2x2 grid for plot input
+                cols = st.columns(2)
+                rows = [cols[i % 2] for i in range(num_plots)]
+                for i in range(num_plots):
+                    with rows[i]:
+                        st.subheader(f"Plot {i + 1}")
+                        # Use a unique key for each selectbox
+                        x_axis_key = f"x_axis_{i}"
+                        y_axis_key = f"y_axis_{i}"
+                        plot_type_key = f"plot_type_{i}"
 
-            for i in range(num_plots):
-                with rows[i]:
-                    st.subheader(f"Plot {i + 1}")
-                    # Use a unique key for each selectbox
-                    x_axis_key = f"x_axis_{i}"
-                    y_axis_key = f"y_axis_{i}"
-                    plot_type_key = f"plot_type_{i}"
+                        x_axis = st.selectbox(f"Select X-axis variable for Plot {i + 1}", df.columns, key=x_axis_key)
+                        y_axes = st.multiselect(f"Select Y-axis variable for Plot {i + 1}", df.columns, key=y_axis_key)
+                        plot_type = st.selectbox(f"Select Plot Type for Plot {i + 1}", ["Line Plot", "Scatter Plot"], key=plot_type_key)
 
-                    x_axis = st.selectbox(f"Select X-axis variable for Plot {i + 1}", df.columns, key=x_axis_key)
-                    y_axes = st.multiselect(f"Select Y-axis variable for Plot {i + 1}", df.columns, key=y_axis_key)
-                    plot_type = st.selectbox(f"Select Plot Type for Plot {i + 1}", ["Line Plot", "Scatter Plot"], key=plot_type_key)
+                        if y_axes:#only if the user has selected plotting values
+                            plot_configs.append({
+                                "x_axis": x_axis,
+                                "y_axis": y_axes,#could be a list
+                                "plot_type": plot_type,
+                                "df": df, #store df
+                                "title": f"{', '.join(y_axes)} vs {x_axis}"
+                            })
 
-                    if y_axes:#only if the user has selected plotting values
-                        plot_configs.append({
-                            "x_axis": x_axis,
-                            "y_axis": y_axes,#could be a list
-                            "plot_type": plot_type,
-                            "df": df, #store df
-                            "title": f"{', '.join(y_axes)} vs {x_axis}"
-                        })
+            else:
+                st.subheader("Plot 1")
+                x_axis = st.selectbox("Select X-axis variable for Plot 1", df.columns, key="x_axis_0")
+                y_axes = st.multiselect("Select Y-axis variable for Plot 1", df.columns, key="y_axis_0")
+                plot_type = st.selectbox("Select Plot Type for Plot 1", ["Line Plot", "Scatter Plot"], key="plot_type_0")
+
+                if y_axes:  # Only if the user has selected plotting values
+                    plot_configs.append({
+                        "x_axis": x_axis,
+                        "y_axis": y_axes,
+                        "plot_type": plot_type,
+                        "df": df,
+                        "title": f"{', '.join(y_axes)} vs {x_axis}"
+                    })
 
             # Generate Plots Button
             if st.button("Generate Plots"):
@@ -187,8 +202,13 @@ def main():
 
             if show_plots and plot_configs:
                 # Create a 2x2 grid for displaying the plots
-                plot_cols = st.columns(2)
-                plot_rows = [plot_cols[i % 2] for i in range(num_plots)]
+                if num_plots > 1:
+                    plot_cols = st.columns(2)
+                    plot_rows = [plot_cols[i % 2] for i in range(num_plots)]
+                else:
+                    plot_cols = st.columns(1)
+                    plot_rows = [plot_cols[i] for i in range(num_plots)]
+
                 for i, config in enumerate(plot_configs):
                     with plot_rows[i]:
                         fig = plot_data(data=config["df"], x_axis=config["x_axis"], y_axes=config["y_axis"], plot_type=config["plot_type"], plot_title=config['title'])
