@@ -138,7 +138,7 @@ def main():
     st.sidebar.selectbox("Type of Visualizations", ["Linear", "Special"], key="selected_type")
 
     if st.session_state.selected_type == "Linear":
-        num_plots = st.sidebar.selectbox("Number of Plots", [1, 2, 3, 4], index=1)  # default 2
+        num_plots = st.sidebar.selectbox("Number of Plots", [1, 2, 3, 4], index=0)  # default 2
 
         ##
         if select_csv:#if you have selected a csv
