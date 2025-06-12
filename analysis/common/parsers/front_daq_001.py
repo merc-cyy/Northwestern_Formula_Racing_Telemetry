@@ -1,10 +1,3 @@
-"""
-FrontDAQ   ·   binary log → CarDB
-Firmware: teensy/src/logger.cpp  
-  (9-byte 'NFR25'+ver+preamble, then 1 032 B records)
-Parser:   FrontDAQ v1 (0.0.1)
-"""
-
 from __future__ import annotations
 import struct
 import numpy as np
