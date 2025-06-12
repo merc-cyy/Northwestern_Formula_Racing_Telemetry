@@ -100,9 +100,10 @@ class TelemTokenizer:
             tok_type = TelemTokenType.TT_BOARD_PREFIX
         elif re.match(r"^0[xX][0-9A-Fa-f]+$", word):
             tok_type = TelemTokenType.TT_HEX_INT
-        elif re.match(r"^-?\d+(?:\.\d*([eE][-+]?\d+)?)$", word) and re.search(
-            r"[\.eE]", word
-        ):
+        # Float: decimal or scientific
+        elif re.match(
+            r"^-?(?:\d+\.\d*|\d*\.\d+|\d+)(?:[eE][-+]?\d+)?$", word
+        ) and re.search(r"[\.eE]", word):
             tok_type = TelemTokenType.TT_FLOAT
         elif re.match(r"^-?\d+$", word):
             tok_type = TelemTokenType.TT_INT
