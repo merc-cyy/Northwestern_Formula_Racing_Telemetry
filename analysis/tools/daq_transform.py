@@ -17,7 +17,7 @@ def transform_file(input_path: str, output_path: str):
     os.makedirs(os.path.dirname(output_path), exist_ok=True)#create the output folder
 
     print(f"Transforming {input_path!r} → {output_path!r}")
-    db = ParserRegistry.parse(input_path)#parse the binary data and store into db
+    db = ParserRegistry.parse(input_path) #parse the binary data and store into db
     if db == None:
         print(f"Something went wrong while parsing {input_path!r}")
         return

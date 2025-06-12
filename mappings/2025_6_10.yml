@@ -76,6 +76,7 @@
 "DAQ-Back.DAQ_Dynamics_IMU_Gryo.X_Angular_Speed":               "dynamics.imu.orientation[0]"
 "DAQ-Back.DAQ_Dynamics_IMU_Gryo.Y_Angular_Speed":               "dynamics.imu.orientation[1]"
 "DAQ-Back.DAQ_Dynamics_IMU_Gryo.Z_Angular_Speed":               "dynamics.imu.orientation[2]"
+
 {% for j in range(8) %}"DAQ-Back.DAQ_Dynamics_Pitot_Lower.Air_Speed_{{ j }}":   "dynamics.air_speed[{{ j }}]"
 "DAQ-Back.DAQ_Dynamics_Pitot_Upper.Air_Speed_{{ j+4 }}":         "dynamics.air_speed[{{ j+4 }}]"
 {% endfor %}
