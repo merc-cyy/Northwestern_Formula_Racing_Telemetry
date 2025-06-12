@@ -30,6 +30,7 @@ class DataMapper:
         pass
 
 
+# Assuming DataMapper and CarDB are defined elsewhere in your codebase
 class YamlDataMapper(DataMapper):
     """
     Maps generic telemetry snapshots (dicts) to CarDB records based on an external mapping file.
@@ -44,67 +45,62 @@ class YamlDataMapper(DataMapper):
         with open(mapping_filename, 'r') as mf:
             content = mf.read()
 
-        # Initialize Jinja environment and expose necessary built-ins
         env = jinja2.Environment(
-        loader=jinja2.FileSystemLoader('.'),
-        undefined=jinja2.StrictUndefined,
-        keep_trailing_newline=True
+            loader=jinja2.FileSystemLoader('.'),
+            undefined=jinja2.StrictUndefined,
+            keep_trailing_newline=True
         )
-
-        # Expose Python built-ins for loop syntax in templates
+        # Expose built-ins for templating
         for fn in ('enumerate', 'range', 'zip', 'len', 'int', 'float', 'bool'):
             env.globals[fn] = getattr(builtins, fn)
-        # Load and render template
 
         template = env.from_string(content)
         rendered = template.render()
-        # Parse final YAML mapping
+        # Parse final YAML mapping (flat dict: src_key -> dest_path)
         self.mapping: Dict[str, str] = yaml.safe_load(rendered)
-        pprint(self.mapping)
 
     def map_snapshots(self, snapshots: List[Dict[str, str]], db: CarDB) -> CarDB:
+        """
+        For each generic snapshot (dict of source_key->string_value), write values into the
+        underlying numpy CarDB buffer according to self.mapping.
+        """
         for idx, snap in enumerate(snapshots):
             row = db._db[idx]
-            for src, dst in self.mapping.items():
-                # skip unmapped or placeholder entries
-                if not dst or dst.strip() == '???':
+            for src_key, dest_path in self.mapping.items():
+                # skip unmapped entries
+                if dest_path == '???':
                     continue
-                if src not in snap:
+                # missing source: skip
+                if src_key not in snap:
                     continue
-                val = snap[src]
-                # Resolve dotted path with optional array indices
-                parts = dst.split('.')
-                obj = row
-                # Traverse to the parent of the final attribute
+                raw_val = snap[src_key]
+                # Try to convert literal values (numbers, bools, lists)
+                try:
+                    val = ast.literal_eval(raw_val)
+                except Exception:
+                    val = raw_val
+                # Navigate to parent of target attribute
+                parts = dest_path.split('.')
+                parent = row
                 for part in parts[:-1]:
-                    if '[' in part:
-                        name, idx_str = part.rstrip(']').split('[')
-                        arr = getattr(obj, name)
-                        obj = arr[int(idx_str)]
-                    else:
-                        obj = getattr(obj, part)
+                    m = re.match(r"(\w+)(?:\[(\d+)\])?", part)
+                    name = m.group(1)
+                    idx_s = m.group(2)
+                    # drill into struct or array
+                    parent = parent[name]
+                    if idx_s is not None:
+                        parent = parent[int(idx_s)]
+                # Assign to final field or array slot
                 last = parts[-1]
-                # Set final attribute or array element
-                if '[' in last:
-                    name, idx_str = last.rstrip(']').split('[')
-                    arr = getattr(obj, name)
-                    arr[int(idx_str)] = self._convert(val)
+                m = re.match(r"(\w+)(?:\[(\d+)\])?", last)
+                name = m.group(1)
+                idx_s = m.group(2)
+                if idx_s is not None:
+                    parent[name][int(idx_s)] = val
                 else:
-                    setattr(obj, last, self._convert(val))
+                    parent[name] = val
         return db
 
-    def _convert(self, val: str):
-        # Attempt boolean, int, then float conversion
-        low = val.lower()
-        if low in ('true', 'false'):
-            return low == 'true'
-        try:
-            return int(val)
-        except ValueError:
-            try:
-                return float(val)
-            except ValueError:
-                return val
 
 
 

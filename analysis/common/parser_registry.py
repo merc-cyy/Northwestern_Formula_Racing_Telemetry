@@ -86,7 +86,8 @@ class ParserRegistry:
             header = fh.read(len(PREAMBLE) + 3)  # 5-byte magic + 3-byte version
 
         if len(header) < len(PREAMBLE):
-            raise ValueError("File too short to contain header")
+            print(f"File {filename} too short to contain header. Skipping...")
+            return
         if not header.startswith(PREAMBLE):
             print(
                 f"Unknown or unsupported file format (missing 'NFR25', got {header}), assuming NFR25 0.0.0"
