@@ -268,7 +268,7 @@ class TelemBuilder:
             raise ValueError(f"Malformed signal fields for '{name_tok.data}': {e}")
         if sb + ln > message.message_size * 8:
             raise ValueError(
-                f"Signal '{name_tok.data}' overruns message '{message.name}'"
+                f"Signal '{name_tok.data}' overruns message '{message.name}. End bit of signal: {sb + ln}. End bit of message {message.message_size * 8}'"
             )
         sig = TelemSignalDescription(
             name=name_tok.data,

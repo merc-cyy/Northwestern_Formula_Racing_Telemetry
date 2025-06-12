@@ -111,7 +111,7 @@ class TestTelemBuilder(unittest.TestCase):
         self.assertEqual(config.options.get("logPeriodMs"), 20)
 
     def test_sign_endian_override(self):
-        cfg = "> B2\n" ">> M2 0x2A0 2\n" ">>> S2 int16 8 16 0.5 -1 signed big\n"
+        cfg = "> B2\n" ">> M2 0x2A0 3\n" ">>> S2 int16 8 16 0.5 -1 signed big\n"
         config = self.build_config(cfg)
         sig = config.boards[0].messages[0].signals[0]
         self.assertTrue(sig.is_signed)
