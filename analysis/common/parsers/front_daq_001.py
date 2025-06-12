@@ -39,8 +39,7 @@ assert LINE_SIZE == 1032, LINE_SIZE
 
 @parser_class(ParserVersion("NFR25", 0, 0, 1))
 class FrontDAQParser(BaseParser):
-    @staticmethod
-    def _decode_record(raw: memoryview, dest: np.void) -> None:
+    def _decode_record(self, raw: memoryview, dest: np.void) -> None:
         vals = struct.unpack_from(LINE_FMT, raw)
         i = 0
 
@@ -126,8 +125,7 @@ class FrontDAQParser(BaseParser):
         dest["bms"]["cell_voltages"][:]  = volts
 
 
-    @staticmethod
-    def parse(filename: str) -> CarDB:
+    def parse(self, filename: str) -> CarDB:
         with open(filename, "rb") as fh:
             # 1) magic
             header = fh.read(PREAMBLE_LEN + VERSION_BYTES + SKIP_BYTES)
@@ -146,6 +144,6 @@ class FrontDAQParser(BaseParser):
         mv = memoryview(data)
         for idx in range(n):
             start = idx * LINE_SIZE
-            FrontDAQParser._decode_record(mv[start : start + LINE_SIZE], db._db[idx])
+            self._decode_record(mv[start : start + LINE_SIZE], db._db[idx])
 
         return db

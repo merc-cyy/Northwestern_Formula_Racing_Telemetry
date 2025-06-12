@@ -20,6 +20,9 @@ from analysis.common.parsers.telem.telem import (
     TelemDataParser,
 )
 
+
+import yaml
+
 class DataMapper:
     def map_snapshots(self, snapshots: List[Dict[str, str]], db: CarDB) -> CarDB:
         pass
@@ -69,7 +72,7 @@ class YamlDataMapper(DataMapper):
 
 
 class TelemDAQParserBase(BaseParser):
-    def get_mapper(self) -> DataMapper:
+    def _get_mapper(self) -> DataMapper:
         pass
 
 
@@ -148,6 +151,6 @@ class TelemDAQParserBase(BaseParser):
         return records
     
     def parse(self, filename: str) -> CarDB:
-        mapper = self.get_mapper()
+        mapper = self._get_mapper()
         snapshots = self._parse_log(filename)
         return mapper.map_snapshots(snapshots)

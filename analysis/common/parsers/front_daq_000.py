@@ -59,8 +59,7 @@ class FrontDAQParser(BaseParser):
     a fully-typed CarDB.
     """
 
-    @staticmethod
-    def _decode_record(raw: memoryview, dest: np.void) -> None:
+    def _decode_record(self, raw: memoryview, dest: np.void) -> None:
         """Decode one 1 004-byte record directly into the CarDB slot."""
         vals = struct.unpack_from(LINE_FMT, raw)
         i = 0
@@ -120,8 +119,7 @@ class FrontDAQParser(BaseParser):
         j = i + NUM_VOLT_CELLS
         dest["bms"]["cell_voltages"][:] = vals[i:j]
 
-    @staticmethod
-    def parse(filename: str) -> CarDB:
+    def parse(self, filename: str) -> CarDB:
         with open(filename, "rb") as fh:
             pre = fh.read(PREAMBLE_LEN)
             # # if len(pre) < PREAMBLE_LEN or not pre.startswith(b"NFR25001"):
@@ -141,7 +139,7 @@ class FrontDAQParser(BaseParser):
         mv = memoryview(blob)
         for rec_idx in range(n):
             start = rec_idx * LINE_SIZE
-            FrontDAQParser._decode_record(
+            self._decode_record(
                 mv[start : start + LINE_SIZE], db._db[rec_idx]
             )
 

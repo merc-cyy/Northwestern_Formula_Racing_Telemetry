@@ -121,4 +121,5 @@ class ParserRegistry:
 
         # Try exact match first
         parser_cls = ParserRegistry.get_parser(requested)
-        return parser_cls.parse(filename)
+        instance = parser_cls()
+        return instance.parse(filename)
