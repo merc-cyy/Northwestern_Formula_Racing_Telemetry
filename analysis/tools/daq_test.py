@@ -15,9 +15,11 @@ def main(args):
     script_dir = os.path.dirname(os.path.abspath(__file__))
     test_dir = os.path.normpath(os.path.join(script_dir, RELATIVE_TEST_DIR))
 
+    print(f"Loading tests from dir {test_dir}")
+
     # Discover and load all tests in the directory
     loader = unittest.TestLoader()
-    suite = loader.discover(start_dir=test_dir)
+    suite = loader.discover(start_dir=test_dir, pattern="test_*.py")
 
     # Run the tests
     runner = unittest.TextTestRunner(verbosity=2)

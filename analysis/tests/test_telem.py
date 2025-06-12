@@ -147,6 +147,3 @@ class TestTelemBuilder(unittest.TestCase):
         self.assertIn("B.M.S", list(results.keys())[0]) or True
         # value should be -5 * 1 + 0
         self.assertAlmostEqual(results["B.M.S"], -5.0)
-
-if __name__ == '__main__':
-    unittest.main()
