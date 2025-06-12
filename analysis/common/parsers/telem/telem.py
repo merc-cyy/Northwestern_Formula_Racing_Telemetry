@@ -67,7 +67,6 @@ class TelemTokenReader:
 class TelemTokenizer:
     def __init__(self, reader: TelemTokenReader):
         self.reader = reader
-        self._peeked: Optional[TelemToken] = None
 
     def start(self) -> bool:
         return True
@@ -76,17 +75,10 @@ class TelemTokenizer:
         self.reader.end()
 
     def peek(self) -> TelemToken:
-        if not self._peeked:
-            self._peeked = self.next()
-        return self._peeked
-
-    def next(self) -> TelemToken:
-        if self._peeked:
-            tok, self._peeked = self._peeked, None
-            return tok
         word = self.reader.peekNextWord()
         if word is None:
             return TelemToken(TelemTokenType.TT_EOF, "", "")
+
         # Determine token type
         if word == "!!":
             tok_type = TelemTokenType.TT_OPTION_PREFIX
@@ -109,7 +101,7 @@ class TelemTokenizer:
             tok_type = TelemTokenType.TT_INT
         else:
             tok_type = TelemTokenType.TT_IDENTIFIER
-        self.reader.moveWord()
+
         # Parse data
         if tok_type == TelemTokenType.TT_INT:
             data = int(word, 10)
@@ -120,6 +112,20 @@ class TelemTokenizer:
         else:
             data = word
         return TelemToken(tok_type, word, data)
+    
+
+    def next(self) -> TelemToken:
+        token = self.peek()
+
+        if token.type == TelemTokenType.TT_EOF:
+            return token
+        
+        print(f"Current word: {token}")
+        self.reader.moveWord()
+
+        return token
+
+
 
 
 # Data classes
@@ -228,15 +234,19 @@ class TelemBuilder:
         if msg_id in self._seen_ids:
             raise ValueError(f"Duplicate message ID {hex(msg_id)}")
         self._seen_ids.add(msg_id)
+
         try:
             msg_size = int(size_tok.text, 0)
         except Exception:
             raise ValueError(f"Expected message size, got '{size_tok.text}'")
+        
         message = TelemMessageDescription(
             name=name_tok.data, message_id=msg_id, message_size=msg_size
         )
+
         board.messages.append(message)
         self._tokenizer.reader.eatUntil("\n")
+
         saw_sig = False
         sig_names = set()
         while self._tokenizer.peek().type == TelemTokenType.TT_SIGNAL_PREFIX:
@@ -252,24 +262,33 @@ class TelemBuilder:
             raise ValueError(f"Message '{message.name}' without signals")
 
     def _parse_signal(self, message: TelemMessageDescription) -> TelemSignalDescription:
-        self._tokenizer.next()
+        print("Parsing signal...")
+        prefix = self._tokenizer.next()
+        if prefix.type is not TelemTokenType.TT_SIGNAL_PREFIX:
+            raise ValueError(
+                f"Not signal prefix! Found '{prefix.data}' while parsing '{message.name}."
+            )
+
         name_tok = self._tokenizer.next()
         type_tok = self._tokenizer.next()
         sb_tok = self._tokenizer.next()
         ln_tok = self._tokenizer.next()
         fac_tok = self._tokenizer.next()
         off_tok = self._tokenizer.next()
+        
         try:
             sb = int(sb_tok.text, 0)
             ln = int(ln_tok.text, 0)
             fac = float(fac_tok.text)
             off = float(off_tok.text)
         except Exception as e:
-            raise ValueError(f"Malformed signal fields for '{name_tok.data}': {e}")
+            raise ValueError(f"Malformed signal fields for '{name_tok.data}': {e}. Found while parsing message {message.name}, signal {len(message.signals)}")
+        
         if sb + ln > message.message_size * 8:
             raise ValueError(
                 f"Signal '{name_tok.data}' overruns message '{message.name}. End bit of signal: {sb + ln}. End bit of message {message.message_size * 8}'"
             )
+        
         sig = TelemSignalDescription(
             name=name_tok.data,
             data_type=type_tok.data,
@@ -278,6 +297,7 @@ class TelemBuilder:
             factor=fac,
             offset=off,
         )
+
         # signedness
         nxt = self._tokenizer.peek()
         if nxt.type == TelemTokenType.TT_IDENTIFIER and nxt.data in (
@@ -286,34 +306,16 @@ class TelemBuilder:
         ):
             sig.is_signed = nxt.data == "signed"
             self._tokenizer.next()
+
         # endianness
         nxt = self._tokenizer.peek()
         if nxt.type == TelemTokenType.TT_IDENTIFIER and nxt.data in ("little", "big"):
             sig.endianness = nxt.data
             self._tokenizer.next()
+
         self._tokenizer.reader.eatUntil("\n")
-        enum_vals = set()
-        while self._tokenizer.peek().type == TelemTokenType.TT_ENUM_PREFIX:
-            enum = self._parse_enum()
-            if enum.raw_value in enum_vals:
-                raise ValueError(
-                    f"Duplicate enum {enum.raw_value} in signal '{sig.name}'"
-                )
-            enum_vals.add(enum.raw_value)
-            sig.enums.append(enum)
+            
         return sig
-
-    def _parse_enum(self) -> TelemEnumEntry:
-        self._tokenizer.next()
-        name_tok = self._tokenizer.next()
-        val_tok = self._tokenizer.next()
-        self._tokenizer.reader.eatUntil("\n")
-        try:
-            rv = int(val_tok.text, 0)
-        except Exception:
-            raise ValueError(f"Malformed enum value '{val_tok.text}'")
-        return TelemEnumEntry(name=name_tok.data, raw_value=rv)
-
 
 # Data parser unchanged
 @dataclass

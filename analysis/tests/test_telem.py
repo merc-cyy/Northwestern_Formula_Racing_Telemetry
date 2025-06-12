@@ -4,6 +4,7 @@ from analysis.common.parsers.telem.telem import (
     TelemTokenizer,
     TelemBuilder,
     TelemTelemetryConfig,
+    TelemTokenType
 )
 
 
@@ -42,15 +43,12 @@ class TestTelemTokenizer(unittest.TestCase):
         while True:
             t = tok.next()
             tokens.append(t)
-            if t.type.name == "TT_EOF":
+            if t.type == TelemTokenType.TT_EOF:
                 break
         return tokens
 
     def test_prefixes(self):
         tokens = self.tokenize("!! > >> >>> >>>>")
-        types = [t.type for t in tokens[:-1]]
-        expected = [TelemTokenizer(reader=None)]  # placeholder for type list
-        # Instead: check names
         names = [t.type.name for t in tokens[:-1]]
         self.assertEqual(
             names,
@@ -134,21 +132,12 @@ class TestTelemBuilder(unittest.TestCase):
             self.build_config(cfg)
 
     def test_signal_overlap_error(self):
-        cfg = (
-            "> B\n"
-            ">> M 0x100 2\n"
-            ">>> S1 uint8 0 8 1 0\n"
-            ">>> S2 uint8 4 8 1 0\n"  # overlap bits 4-7
-        )
+        cfg = "> B\n" ">> M 0x100 2\n" ">>> S1 uint8 0 8 1 0\n" ">>> S2 uint8 4 8 1 0\n"
         with self.assertRaises(ValueError):
             self.build_config(cfg)
 
     def test_signal_out_of_range_error(self):
-        cfg = (
-            "> B\n"
-            ">> M 0x100 1\n"
-            ">>> S uint8 0 9 1 0\n"  # length 9 > 8
-        )
+        cfg = "> B\n" ">> M 0x100 1\n" ">>> S uint8 0 9 1 0\n"
         with self.assertRaises(ValueError):
             self.build_config(cfg)
 
