@@ -72,7 +72,7 @@ class YamlDataMapper(DataMapper):
 
 
 class TelemDAQParserBase(BaseParser):
-    def _get_mapper(self) -> DataMapper:
+    def get_mapper(self) -> DataMapper:
         pass
 
 
@@ -151,6 +151,7 @@ class TelemDAQParserBase(BaseParser):
         return records
     
     def parse(self, filename: str) -> CarDB:
-        mapper = self._get_mapper()
+        mapper = self.get_mapper()
         snapshots = self._parse_log(filename)
-        return mapper.map_snapshots(snapshots)
+        db = CarDB(len(snapshots))
+        return mapper.map_snapshots(snapshots, db)

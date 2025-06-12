@@ -17,5 +17,5 @@ from analysis.common.parsers.telem.telem_base_parser import (
 @parser_class(ParserVersion("NFR25", 49, 48, 48))
 class TelemParserV100(TelemDAQParserBase):
     @staticmethod
-    def get_mapper(self) -> DataMapper:
+    def get_mapper() -> DataMapper:
         return YamlDataMapper("mappings/2025_6_10.yml")

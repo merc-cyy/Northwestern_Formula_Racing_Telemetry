@@ -316,7 +316,6 @@ class TelemBuilder:
             
         return sig
 
-# Data parser unchanged
 @dataclass
 class TelemDataParser:
     config: TelemTelemetryConfig

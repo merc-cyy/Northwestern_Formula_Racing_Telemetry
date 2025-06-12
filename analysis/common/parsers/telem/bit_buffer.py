@@ -12,13 +12,9 @@ class TelemBitBuffer:
     """
     A Python reimplementation of the C++ BitBuffer, with optional existing buffer injection.
     """
-
-    __offset_hack = 1  # mimic C++ internal offset hack if needed
-
     def __init__(self, bit_size: int, buffer: Optional[bytearray] = None):
         self._bit_size = bit_size
         byte_count = (bit_size + 7) >> 3
-        byte_count += TelemBitBuffer.__offset_hack
         if buffer is not None:
             if len(buffer) < byte_count:
                 raise ValueError(
@@ -41,7 +37,7 @@ class TelemBitBuffer:
         total_bits = handle.size
         for bit_index in range(total_bits):
             absolute_bit = handle.offset + bit_index
-            byte_index = (absolute_bit >> 3) + TelemBitBuffer.__offset_hack
+            byte_index = (absolute_bit >> 3)
             bit_pos = absolute_bit & 7
             src_byte = bit_index >> 3
             src_bit = bit_index & 7
@@ -63,7 +59,7 @@ class TelemBitBuffer:
 
         for bit_index in range(total_bits):
             absolute_bit = handle.offset + bit_index
-            byte_index = (absolute_bit >> 3) + TelemBitBuffer.__offset_hack
+            byte_index = (absolute_bit >> 3)
             bit_pos = absolute_bit & 7
             bit_val = (self._buffer[byte_index] >> bit_pos) & 1
             dst_byte = bit_index >> 3
