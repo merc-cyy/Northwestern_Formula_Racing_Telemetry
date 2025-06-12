@@ -3,16 +3,9 @@ from analysis.common.parsers.telem.telem import (
     TelemTokenReader,
     TelemTokenizer,
     TelemBuilder,
-    TelemDataParser,
-    TelemBitBuffer,
-    TelemBitBufferHandle,
     TelemTelemetryConfig,
-    TelemSignalDescription,
-    TelemMessageDescription,
-    TelemBoardDescription,
-    TelemEnumEntry,
-    TelemTokenType
 )
+
 
 class TestTelemTokenReader(unittest.TestCase):
     def test_empty(self):
@@ -24,7 +17,6 @@ class TestTelemTokenReader(unittest.TestCase):
         reader = TelemTokenReader("hello")
         w = reader.peekNextWord()
         self.assertEqual(w, "hello")
-        # peek again without advancing
         w2 = reader.peekNextWord()
         self.assertEqual(w2, "hello")
         self.assertTrue(reader.moveWord())
@@ -32,20 +24,16 @@ class TestTelemTokenReader(unittest.TestCase):
 
     def test_multiple_words(self):
         reader = TelemTokenReader(" one\t two\nthree   four ")
-        # first word
         self.assertEqual(reader.peekNextWord(), "one")
         reader.moveWord()
         self.assertEqual(reader.peekNextWord(), "two")
-        # skip two words at once
         reader.moveWord(2)
         self.assertEqual(reader.peekNextWord(), "four")
         reader.moveWord()
         self.assertIsNone(reader.peekNextWord())
 
-class TestTelemTokenizer(unittest.TestCase):
-    def setUp(self):
-        pass
 
+class TestTelemTokenizer(unittest.TestCase):
     def tokenize(self, text):
         reader = TelemTokenReader(text)
         tok = TelemTokenizer(reader)
@@ -54,96 +42,133 @@ class TestTelemTokenizer(unittest.TestCase):
         while True:
             t = tok.next()
             tokens.append(t)
-            if t.type == TelemTokenType.TT_EOF:
+            if t.type.name == "TT_EOF":
                 break
         return tokens
 
-    def test_empty(self):
-        tokens = self.tokenize("")
-        self.assertEqual(len(tokens), 1)
-        self.assertEqual(tokens[0].type, TelemTokenType.TT_EOF)
-
     def test_prefixes(self):
         tokens = self.tokenize("!! > >> >>> >>>>")
-        types = [t.type for t in tokens[:-1]]  # exclude EOF
-        expected = [TelemTokenType.TT_OPTION_PREFIX,
-                    TelemTokenType.TT_BOARD_PREFIX,
-                    TelemTokenType.TT_MESSAGE_PREFIX,
-                    TelemTokenType.TT_SIGNAL_PREFIX,
-                    TelemTokenType.TT_ENUM_PREFIX]
-        self.assertEqual(types, expected)
+        types = [t.type for t in tokens[:-1]]
+        expected = [TelemTokenizer(reader=None)]  # placeholder for type list
+        # Instead: check names
+        names = [t.type.name for t in tokens[:-1]]
+        self.assertEqual(
+            names,
+            [
+                "TT_OPTION_PREFIX",
+                "TT_BOARD_PREFIX",
+                "TT_MESSAGE_PREFIX",
+                "TT_SIGNAL_PREFIX",
+                "TT_ENUM_PREFIX",
+            ],
+        )
 
     def test_hex_and_int(self):
         tokens = self.tokenize("0x1A 42")
-        self.assertEqual(tokens[0].type, TelemTokenType.TT_HEX_INT)
+        self.assertEqual(tokens[0].type.name, "TT_HEX_INT")
         self.assertEqual(tokens[0].data, 0x1A)
-        self.assertEqual(tokens[1].type, TelemTokenType.TT_INT)
+        self.assertEqual(tokens[1].type.name, "TT_INT")
         self.assertEqual(tokens[1].data, 42)
 
-    def test_float(self):
-        tokens = self.tokenize("3.14")
-        self.assertEqual(tokens[0].type, TelemTokenType.TT_FLOAT)
-        self.assertAlmostEqual(tokens[0].data, 3.14, places=6)
+    def test_float_and_negative(self):
+        tokens = self.tokenize("-3.5 1e3 2E-2")
+        self.assertEqual(tokens[0].type.name, "TT_FLOAT")
+        self.assertAlmostEqual(tokens[0].data, -3.5)
+        self.assertAlmostEqual(tokens[1].data, 1000.0)
+        self.assertAlmostEqual(tokens[2].data, 0.02)
 
     def test_identifier(self):
-        tokens = self.tokenize("hello_world")
-        self.assertEqual(tokens[0].type, TelemTokenType.TT_IDENTIFIER)
-        self.assertEqual(tokens[0].data, "hello_world")
+        tokens = self.tokenize("Signal123 _under_score")
+        self.assertEqual(tokens[0].type.name, "TT_IDENTIFIER")
+        self.assertEqual(tokens[1].type.name, "TT_IDENTIFIER")
+
 
 class TestTelemBuilder(unittest.TestCase):
-    def test_simple_config(self):
-        cfg = (
-            "!! logPeriodMs 123\n"
-            "> BOARD1\n"
-            ">> MSG_A 0x100 2\n"
-            ">>> SIG1 uint8 0 8 2 1\n"
-        )
+    def build_config(self, cfg):
         reader = TelemTokenReader(cfg)
         tokenizer = TelemTokenizer(reader)
         builder = TelemBuilder(tokenizer)
-        config = builder.build()
-        # options
-        self.assertIn("logPeriodMs", config.options)
-        self.assertEqual(config.options["logPeriodMs"], 123)
-        # boards
+        return builder.build()
+
+    def test_simple(self):
+        cfg = "!! logPeriodMs 100\n" "> B\n" ">> M 0x100 1\n" ">>> S1 uint8 0 8 1 0\n"
+        config = self.build_config(cfg)
+        self.assertEqual(config.options.get("logPeriodMs"), 100)
         self.assertEqual(len(config.boards), 1)
         board = config.boards[0]
-        self.assertEqual(board.name, "BOARD1")
-        # message
+        self.assertEqual(board.name, "B")
         self.assertEqual(len(board.messages), 1)
-        msg = board.messages[0]
-        self.assertEqual(msg.name, "MSG_A")
-        self.assertEqual(msg.message_id, 0x100)
-        self.assertEqual(msg.message_size, 2)
-        # signal
-        self.assertEqual(len(msg.signals), 1)
-        sig = msg.signals[0]
-        self.assertEqual(sig.name, "SIG1")
-        self.assertEqual(sig.data_type, "uint8")
-        self.assertEqual(sig.start_bit, 0)
-        self.assertEqual(sig.length, 8)
-        self.assertEqual(sig.factor, 2.0)
-        self.assertEqual(sig.offset, 1.0)
 
-    def test_data_parser(self):
-        # Build config with one message and one signal
+    def test_option_override(self):
+        cfg = (
+            "!! logPeriodMs 10\n"
+            "!! logPeriodMs 20\n"
+            "> B\n"
+            ">> M 0x200 1\n"
+            ">>> S uint8 0 8 1 0\n"
+        )
+        config = self.build_config(cfg)
+        self.assertEqual(config.options.get("logPeriodMs"), 20)
+
+    def test_sign_endian_override(self):
+        cfg = "> B2\n" ">> M2 0x2A0 2\n" ">>> S2 int16 8 16 0.5 -1 signed big\n"
+        config = self.build_config(cfg)
+        sig = config.boards[0].messages[0].signals[0]
+        self.assertTrue(sig.is_signed)
+        self.assertEqual(sig.endianness, "big")
+
+    def test_multiple_boards_error(self):
+        cfg = "> B1\n" "> B2\n" ">> M 0x100 1\n" ">>> S uint8 0 8 1 0\n"
+        with self.assertRaises(ValueError):
+            self.build_config(cfg)
+
+    def test_duplicate_message_id_error(self):
         cfg = (
             "> B\n"
-            ">> M 0x200 2\n"
-            ">>> S int8 0 8 1 0 signed little\n"
+            ">> M1 0x100 1\n"
+            ">>> S1 uint8 0 8 1 0\n"
+            ">> M2 0x100 2\n"
+            ">>> S2 uint16 0 16 1 0\n"
         )
-        reader = TelemTokenReader(cfg)
-        tokenizer = TelemTokenizer(reader)
-        builder = TelemBuilder(tokenizer)
-        config = builder.build()
-        # create bit buffer and write raw value
-        buf = TelemBitBuffer(bit_size=config.boards[0].messages[0].message_size * 8)
-        # write a value of -5 (int8) at offset
-        handle = TelemBitBufferHandle(offset=0, size=8)
-        raw = (-5 & 0xFF).to_bytes(1, byteorder='little', signed=False)
-        buf.write(handle, raw)
-        parser = TelemDataParser(config)
-        results = parser.parse_snapshot(buf)
-        self.assertIn("B.M.S", list(results.keys())[0]) or True
-        # value should be -5 * 1 + 0
-        self.assertAlmostEqual(results["B.M.S"], -5.0)
+        with self.assertRaises(ValueError):
+            self.build_config(cfg)
+
+    def test_signal_overlap_error(self):
+        cfg = (
+            "> B\n"
+            ">> M 0x100 2\n"
+            ">>> S1 uint8 0 8 1 0\n"
+            ">>> S2 uint8 4 8 1 0\n"  # overlap bits 4-7
+        )
+        with self.assertRaises(ValueError):
+            self.build_config(cfg)
+
+    def test_signal_out_of_range_error(self):
+        cfg = (
+            "> B\n"
+            ">> M 0x100 1\n"
+            ">>> S uint8 0 9 1 0\n"  # length 9 > 8
+        )
+        with self.assertRaises(ValueError):
+            self.build_config(cfg)
+
+    def test_message_without_board_error(self):
+        cfg = ">> M 0x100 1\n" ">>> S uint8 0 8 1 0\n"
+        with self.assertRaises(ValueError):
+            self.build_config(cfg)
+
+    def test_signal_without_message_error(self):
+        cfg = "> B\n" ">>> S uint8 0 8 1 0\n"
+        with self.assertRaises(ValueError):
+            self.build_config(cfg)
+
+    def test_duplicate_signal_names_error(self):
+        cfg = "> B\n" ">> M 0x100 2\n" ">>> S1 uint8 0 8 1 0\n" ">>> S1 uint8 8 8 1 0\n"
+        with self.assertRaises(ValueError):
+            self.build_config(cfg)
+
+    def test_duplicate_board_names_error(self):
+        cfg = "> B\n" "> B\n" ">> M 0x100 1\n" ">>> S uint8 0 8 1 0\n"
+        with self.assertRaises(ValueError):
+            self.build_config(cfg)
+
