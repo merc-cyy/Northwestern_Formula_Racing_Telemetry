@@ -120,7 +120,7 @@ class TelemTokenizer:
         if token.type == TelemTokenType.TT_EOF:
             return token
         
-        print(f"Current word: {token}")
+        # print(f"Current word: {token}")
         self.reader.moveWord()
 
         return token
@@ -262,7 +262,6 @@ class TelemBuilder:
             raise ValueError(f"Message '{message.name}' without signals")
 
     def _parse_signal(self, message: TelemMessageDescription) -> TelemSignalDescription:
-        print("Parsing signal...")
         prefix = self._tokenizer.next()
         if prefix.type is not TelemTokenType.TT_SIGNAL_PREFIX:
             raise ValueError(
