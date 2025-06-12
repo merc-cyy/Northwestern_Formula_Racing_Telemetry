@@ -3,6 +3,8 @@ import struct
 import numpy as np
 import yaml
 from pprint import pprint
+import jinja2
+import builtins
 
 from analysis.common.parser_registry import ParserVersion, parser_class, BaseParser
 
@@ -31,44 +33,78 @@ class DataMapper:
 class YamlDataMapper(DataMapper):
     """
     Maps generic telemetry snapshots (dicts) to CarDB records based on an external mapping file.
-    Mapping file format (YAML):
-      source_key: target_path
+    Mapping file format (YAML + Jinja2 templating):
+    source_key: target_path
     where target_path is a dotted path into CarDB attributes, with optional [i] for array indices.
+    Use '???' to indicate unmapped fields (skipped).
+    Supports Jinja2 loops (including enumerate, range) in the mapping file.
     """
     def __init__(self, mapping_filename: str):
+        # Load and render Jinja2 template
         with open(mapping_filename, 'r') as mf:
-            self.mapping = yaml.safe_load(mf)
-            pprint(self.mapping)
+            content = mf.read()
+
+        # Initialize Jinja environment and expose necessary built-ins
+        env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader('.'),
+        undefined=jinja2.StrictUndefined,
+        keep_trailing_newline=True
+        )
+
+        # Expose Python built-ins for loop syntax in templates
+        for fn in ('enumerate', 'range', 'zip', 'len', 'int', 'float', 'bool'):
+            env.globals[fn] = getattr(builtins, fn)
+        # Load and render template
+
+        template = env.from_string(content)
+        rendered = template.render()
+        # Parse final YAML mapping
+        self.mapping: Dict[str, str] = yaml.safe_load(rendered)
+        pprint(self.mapping)
 
     def map_snapshots(self, snapshots: List[Dict[str, str]], db: CarDB) -> CarDB:
         for idx, snap in enumerate(snapshots):
             row = db._db[idx]
             for src, dst in self.mapping.items():
+                # skip unmapped or placeholder entries
+                if not dst or dst.strip() == '???':
+                    continue
                 if src not in snap:
                     continue
                 val = snap[src]
-                # parse dst path, e.g. 'bms.cell_temps[3]'
+                # Resolve dotted path with optional array indices
                 parts = dst.split('.')
                 obj = row
+                # Traverse to the parent of the final attribute
                 for part in parts[:-1]:
                     if '[' in part:
                         name, idx_str = part.rstrip(']').split('[')
-                        obj = getattr(obj, name)[int(idx_str)]
+                        arr = getattr(obj, name)
+                        obj = arr[int(idx_str)]
                     else:
                         obj = getattr(obj, part)
                 last = parts[-1]
+                # Set final attribute or array element
                 if '[' in last:
                     name, idx_str = last.rstrip(']').split('[')
                     arr = getattr(obj, name)
-                    arr[int(idx_str)] = float(val)
+                    arr[int(idx_str)] = self._convert(val)
                 else:
-                    # scalar assignment, convert to float if possible
-                    try:
-                        v = float(val)
-                    except ValueError:
-                        v = val
-                    setattr(obj, last, v)
+                    setattr(obj, last, self._convert(val))
         return db
+
+    def _convert(self, val: str):
+        # Attempt boolean, int, then float conversion
+        low = val.lower()
+        if low in ('true', 'false'):
+            return low == 'true'
+        try:
+            return int(val)
+        except ValueError:
+            try:
+                return float(val)
+            except ValueError:
+                return val
 
 
 
@@ -119,8 +155,6 @@ class TelemDAQParserBase(BaseParser):
         # Extract and decode config
         cfg_bytes = raw[start:end]
         cfg_text = cfg_bytes.decode("utf-8")
-
-        print(cfg_text)
 
         # Build telemetry schema
         rdr = TelemTokenReader(cfg_text)
