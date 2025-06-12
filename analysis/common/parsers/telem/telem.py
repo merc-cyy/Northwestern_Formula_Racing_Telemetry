@@ -2,7 +2,6 @@ import re
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Union
 from enum import Enum, auto
-
 from analysis.common.parsers.telem.bit_buffer import *
 
 
@@ -24,10 +23,10 @@ class TelemTokenType(Enum):
 class TelemToken:
     type: TelemTokenType
     text: str
-    data: Union[int, float, str, None] = None
+    data: Union[int, float, str]
 
 
-# TokenReader: reads raw words from the input
+# TokenReader: reads raw words
 class TelemTokenReader:
     def __init__(self, config_str: str):
         self._content = config_str
@@ -64,7 +63,7 @@ class TelemTokenReader:
         self._pos = self._n
 
 
-# Tokenizer: produces TelemToken objects from the reader
+# Tokenizer: produces TelemTokens
 class TelemTokenizer:
     def __init__(self, reader: TelemTokenReader):
         self.reader = reader
@@ -83,12 +82,12 @@ class TelemTokenizer:
 
     def next(self) -> TelemToken:
         if self._peeked:
-            tok = self._peeked
-            self._peeked = None
+            tok, self._peeked = self._peeked, None
             return tok
         word = self.reader.peekNextWord()
         if word is None:
-            return TelemToken(TelemTokenType.TT_EOF, "")
+            return TelemToken(TelemTokenType.TT_EOF, "", "")
+        # Determine token type
         if word == "!!":
             tok_type = TelemTokenType.TT_OPTION_PREFIX
         elif word == ">>>>":
@@ -99,20 +98,22 @@ class TelemTokenizer:
             tok_type = TelemTokenType.TT_MESSAGE_PREFIX
         elif word == ">":
             tok_type = TelemTokenType.TT_BOARD_PREFIX
-        elif re.match(r"^0x[0-9A-Fa-f]+$", word):
+        elif re.match(r"^0[xX][0-9A-Fa-f]+$", word):
             tok_type = TelemTokenType.TT_HEX_INT
+        elif re.match(r"^-?\d+(?:\.\d*([eE][-+]?\d+)?)$", word) and re.search(
+            r"[\.eE]", word
+        ):
+            tok_type = TelemTokenType.TT_FLOAT
         elif re.match(r"^-?\d+$", word):
             tok_type = TelemTokenType.TT_INT
-        elif re.match(r"^-?\d+\.\d*([eE][-+]?\d+)?$", word):
-            tok_type = TelemTokenType.TT_FLOAT
         else:
             tok_type = TelemTokenType.TT_IDENTIFIER
         self.reader.moveWord()
-        data = None
+        # Parse data
         if tok_type == TelemTokenType.TT_INT:
-            data = int(word)
+            data = int(word, 10)
         elif tok_type == TelemTokenType.TT_HEX_INT:
-            data = int(word, 16)
+            data = int(word, 0)
         elif tok_type == TelemTokenType.TT_FLOAT:
             data = float(word)
         else:
@@ -120,7 +121,7 @@ class TelemTokenizer:
         return TelemToken(tok_type, word, data)
 
 
-# Data classes with Telem prefix
+# Data classes
 @dataclass
 class TelemEnumEntry:
     name: str
@@ -129,12 +130,12 @@ class TelemEnumEntry:
 
 @dataclass
 class TelemSignalDescription:
-    name: str = ""
-    data_type: str = ""
-    start_bit: int = 0
-    length: int = 0
-    factor: float = 1.0
-    offset: float = 0.0
+    name: str
+    data_type: str
+    start_bit: int
+    length: int
+    factor: float
+    offset: float
     is_signed: Optional[bool] = None
     endianness: Optional[str] = None
     enums: List[TelemEnumEntry] = field(default_factory=list)
@@ -142,16 +143,16 @@ class TelemSignalDescription:
 
 @dataclass
 class TelemMessageDescription:
-    name: str = ""
-    message_id: int = 0
-    message_size: int = 0
+    name: str
+    message_id: int
+    message_size: int
     signals: List[TelemSignalDescription] = field(default_factory=list)
-    buffer_offset: int = 0  # assigned at bus construction
+    buffer_offset: int = 0
 
 
 @dataclass
 class TelemBoardDescription:
-    name: str = ""
+    name: str
     description: str = ""
     messages: List[TelemMessageDescription] = field(default_factory=list)
 
@@ -162,32 +163,27 @@ class TelemTelemetryConfig:
     boards: List[TelemBoardDescription] = field(default_factory=list)
 
 
-# Builder follows C++ structure
+# Builder with validation
 class TelemBuilder:
+    MAX_MSG_ID = 0x7FF
+
     def __init__(self, tokenizer: TelemTokenizer):
         self._tokenizer = tokenizer
         self._config = TelemTelemetryConfig()
-        self._current_board: Optional[TelemBoardDescription] = None
-        self._current_message: Optional[TelemMessageDescription] = None
-        self._current_signal: Optional[TelemSignalDescription] = None
-        self._message_ids = set()
+        self._seen_boards = set()
+        self._seen_ids = set()
 
     def build(self) -> TelemTelemetryConfig:
         if not self._tokenizer.start():
-            raise RuntimeError("Failed to start tokenizer")
-        while True:
-            tok = self._tokenizer.peek()
-            if tok.type != TelemTokenType.TT_OPTION_PREFIX:
-                break
+            raise RuntimeError("Tokenizer failed to start")
+        # Global options
+        while self._tokenizer.peek().type == TelemTokenType.TT_OPTION_PREFIX:
             self._parse_global_option()
+        # Boards
         saw_board = False
-        while True:
-            tok = self._tokenizer.peek()
-            if tok.type == TelemTokenType.TT_BOARD_PREFIX:
-                saw_board = True
-                self._parse_board()
-            else:
-                break
+        while self._tokenizer.peek().type == TelemTokenType.TT_BOARD_PREFIX:
+            saw_board = True
+            self._parse_board()
         if not saw_board:
             raise ValueError("No board defined")
         self._tokenizer.end()
@@ -195,62 +191,93 @@ class TelemBuilder:
 
     def _parse_global_option(self):
         self._tokenizer.next()
-        name_t = self._tokenizer.next()
-        val_t = self._tokenizer.next()
-        self._config.options[name_t.data] = val_t.data
+        name_tok = self._tokenizer.next()
+        val_tok = self._tokenizer.next()
+        self._config.options[name_tok.data] = val_tok.data
         self._tokenizer.reader.eatUntil("\n")
 
     def _parse_board(self):
         self._tokenizer.next()
-        name_t = self._tokenizer.next()
-        bd = TelemBoardDescription(name=name_t.data)
-        self._config.boards.append(bd)
-        self._current_board = bd
+        name_tok = self._tokenizer.next()
+        board_name = name_tok.data
+        if board_name in self._seen_boards:
+            raise ValueError(f"Duplicate board '{board_name}'")
+        self._seen_boards.add(board_name)
+        board = TelemBoardDescription(name=board_name)
+        self._config.boards.append(board)
         self._tokenizer.reader.eatUntil("\n")
         saw_msg = False
         while self._tokenizer.peek().type == TelemTokenType.TT_MESSAGE_PREFIX:
             saw_msg = True
-            self._parse_message()
+            self._parse_message(board)
         if not saw_msg:
-            raise ValueError(f"Board '{bd.name}' without messages")
+            raise ValueError(f"Board '{board_name}' without messages")
 
-    def _parse_message(self):
+    def _parse_message(self, board: TelemBoardDescription):
         self._tokenizer.next()
-        name_t = self._tokenizer.next()
-        id_t = self._tokenizer.next()
-        sz_t = self._tokenizer.next()
-        msg = TelemMessageDescription(
-            name=name_t.data, message_id=id_t.data, message_size=sz_t.data
+        name_tok = self._tokenizer.next()
+        id_tok = self._tokenizer.next()
+        size_tok = self._tokenizer.next()
+        try:
+            msg_id = int(id_tok.text, 0)
+        except Exception:
+            raise ValueError(f"Expected message ID, got '{id_tok.text}'")
+        if msg_id > self.MAX_MSG_ID:
+            raise ValueError(f"Message ID {hex(msg_id)} out of range")
+        if msg_id in self._seen_ids:
+            raise ValueError(f"Duplicate message ID {hex(msg_id)}")
+        self._seen_ids.add(msg_id)
+        try:
+            msg_size = int(size_tok.text, 0)
+        except Exception:
+            raise ValueError(f"Expected message size, got '{size_tok.text}'")
+        message = TelemMessageDescription(
+            name=name_tok.data, message_id=msg_id, message_size=msg_size
         )
-        if msg.message_id in self._message_ids:
-            raise ValueError(f"Duplicate message ID {msg.message_id}")
-        self._message_ids.add(msg.message_id)
-        self._current_board.messages.append(msg)
-        self._current_message = msg
+        board.messages.append(message)
         self._tokenizer.reader.eatUntil("\n")
         saw_sig = False
+        sig_names = set()
         while self._tokenizer.peek().type == TelemTokenType.TT_SIGNAL_PREFIX:
             saw_sig = True
-            self._parse_signal()
+            sig = self._parse_signal(message)
+            if sig.name in sig_names:
+                raise ValueError(
+                    f"Duplicate signal '{sig.name}' in message '{message.name}'"
+                )
+            sig_names.add(sig.name)
+            message.signals.append(sig)
         if not saw_sig:
-            raise ValueError(f"Message '{msg.name}' without signals")
+            raise ValueError(f"Message '{message.name}' without signals")
 
-    def _parse_signal(self):
+    def _parse_signal(self, message: TelemMessageDescription) -> TelemSignalDescription:
         self._tokenizer.next()
-        name_t = self._tokenizer.next()
-        type_t = self._tokenizer.next()
-        sb_t = self._tokenizer.next()
-        ln_t = self._tokenizer.next()
-        fac_t = self._tokenizer.next()
-        off_t = self._tokenizer.next()
+        name_tok = self._tokenizer.next()
+        type_tok = self._tokenizer.next()
+        sb_tok = self._tokenizer.next()
+        ln_tok = self._tokenizer.next()
+        fac_tok = self._tokenizer.next()
+        off_tok = self._tokenizer.next()
+        try:
+            sb = int(sb_tok.text, 0)
+            ln = int(ln_tok.text, 0)
+            fac = float(fac_tok.text)
+            off = float(off_tok.text)
+        except Exception as e:
+            raise ValueError(f"Malformed signal fields for '{name_tok.data}': {e}")
+        if sb + ln > message.message_size * 8:
+            raise ValueError(
+                f"Signal '{name_tok.data}' overruns message '{message.name}'"
+            )
         sig = TelemSignalDescription(
-            name=name_t.data,
-            data_type=type_t.data,
-            start_bit=sb_t.data,
-            length=ln_t.data,
-            factor=fac_t.data,
-            offset=off_t.data,
+            name=name_tok.data,
+            data_type=type_tok.data,
+            start_bit=sb,
+            length=ln,
+            factor=fac,
+            offset=off,
         )
+        # signedness
         nxt = self._tokenizer.peek()
         if nxt.type == TelemTokenType.TT_IDENTIFIER and nxt.data in (
             "signed",
@@ -258,62 +285,65 @@ class TelemBuilder:
         ):
             sig.is_signed = nxt.data == "signed"
             self._tokenizer.next()
+        # endianness
         nxt = self._tokenizer.peek()
         if nxt.type == TelemTokenType.TT_IDENTIFIER and nxt.data in ("little", "big"):
             sig.endianness = nxt.data
             self._tokenizer.next()
-        self._current_message.signals.append(sig)
-        self._current_signal = sig
         self._tokenizer.reader.eatUntil("\n")
+        enum_vals = set()
         while self._tokenizer.peek().type == TelemTokenType.TT_ENUM_PREFIX:
-            self._parse_enum()
+            enum = self._parse_enum()
+            if enum.raw_value in enum_vals:
+                raise ValueError(
+                    f"Duplicate enum {enum.raw_value} in signal '{sig.name}'"
+                )
+            enum_vals.add(enum.raw_value)
+            sig.enums.append(enum)
+        return sig
 
-    def _parse_enum(self):
+    def _parse_enum(self) -> TelemEnumEntry:
         self._tokenizer.next()
-        name_t = self._tokenizer.next()
-        val_t = self._tokenizer.next()
-        enum = TelemEnumEntry(name=name_t.data, raw_value=val_t.data)
-        self._current_signal.enums.append(enum)
+        name_tok = self._tokenizer.next()
+        val_tok = self._tokenizer.next()
         self._tokenizer.reader.eatUntil("\n")
+        try:
+            rv = int(val_tok.text, 0)
+        except Exception:
+            raise ValueError(f"Malformed enum value '{val_tok.text}'")
+        return TelemEnumEntry(name=name_tok.data, raw_value=rv)
 
 
-# Data parser: assign offsets and decode snapshots
+# Data parser unchanged
 @dataclass
 class TelemDataParser:
     config: TelemTelemetryConfig
 
     def __post_init__(self):
-        # assign buffer offsets (64 bits per message)
-        offset_bits = 0
-        for board in self.config.boards:
-            for msg in board.messages:
-                msg.buffer_offset = offset_bits
-                offset_bits += 64
-        self.total_bits = offset_bits
+        off = 0
+        for b in self.config.boards:
+            for m in b.messages:
+                m.buffer_offset = off
+                off += 64
+        self.total_bits = off
 
     def parse_snapshot(self, buffer) -> Dict[str, float]:
-        """
-        Given a TelemBitBuffer 'buffer', returns mapping from "Board.Message.Signal" to physical value.
-        """
-        results: Dict[str, float] = {}
-        for board in self.config.boards:
-            for msg in board.messages:
-                for sig in msg.signals:
-                    bit_off = msg.buffer_offset + sig.start_bit
-                    handle = TelemBitBufferHandle(offset=bit_off, size=sig.length)
-                    raw_bytes = buffer.read(handle)
-                    if raw_bytes is None:
+        res = {}
+        for b in self.config.boards:
+            for m in b.messages:
+                for s in m.signals:
+                    h = TelemBitBufferHandle(
+                        offset=m.buffer_offset + s.start_bit, size=s.length
+                    )
+                    data = buffer.read(h)
+                    if data is None:
                         continue
                     signed = (
-                        sig.is_signed
-                        if sig.is_signed is not None
-                        else sig.data_type.startswith("int")
+                        s.is_signed
+                        if s.is_signed is not None
+                        else s.data_type.startswith("int")
                     )
-                    byteorder = sig.endianness or "little"
-                    raw_val = int.from_bytes(
-                        raw_bytes, byteorder=byteorder, signed=signed
-                    )
-                    phys = raw_val * sig.factor + sig.offset
-                    key = f"{board.name}.{msg.name}.{sig.name}"
-                    results[key] = phys
-        return results
+                    bo = s.endianness or "little"
+                    raw = int.from_bytes(data, byteorder=bo, signed=signed)
+                    res[f"{b.name}.{m.name}.{s.name}"] = raw * s.factor + s.offset
+        return res
