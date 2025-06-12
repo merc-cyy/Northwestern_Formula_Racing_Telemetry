@@ -1,6 +1,8 @@
 from __future__ import annotations
 import struct
 import numpy as np
+import yaml
+from pprint import pprint
 
 from analysis.common.parser_registry import ParserVersion, parser_class, BaseParser
 
@@ -21,8 +23,6 @@ from analysis.common.parsers.telem.telem import (
 )
 
 
-import yaml
-
 class DataMapper:
     def map_snapshots(self, snapshots: List[Dict[str, str]], db: CarDB) -> CarDB:
         pass
@@ -38,6 +38,7 @@ class YamlDataMapper(DataMapper):
     def __init__(self, mapping_filename: str):
         with open(mapping_filename, 'r') as mf:
             self.mapping = yaml.safe_load(mf)
+            pprint(self.mapping)
 
     def map_snapshots(self, snapshots: List[Dict[str, str]], db: CarDB) -> CarDB:
         for idx, snap in enumerate(snapshots):

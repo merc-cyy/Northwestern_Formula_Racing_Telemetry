@@ -1,475 +1,147 @@
-BMS.BMS_Faults.Fault_Summary
-BMS.BMS_Faults.Undervoltage_Fault
-BMS.BMS_Faults.Overvoltage_Fault
-BMS.BMS_Faults.Undertemperature_Fault
-BMS.BMS_Faults.Overtemperature_Fault
-BMS.BMS_Faults.Overcurrent_Fault
-BMS.BMS_Faults.External_Kill_Fault
-BMS.BMS_Faults.Open_Wire_Fault
-BMS.BMS_Faults.Open_Wire_Temp_Fault
-BMS.BMS_Faults.Pec_Fault
-BMS.BMS_Faults.Total_PEC_Failures
-BMS.BMS_SOE.Max_Discharge_Current
-BMS.BMS_SOE.Max_Regen_Current
-BMS.BMS_SOE.Battery_Voltage
-BMS.BMS_SOE.Battery_Temperature
-BMS.BMS_SOE.Battery_Current
-BMS.BMS_Status.BMS_State
-BMS.BMS_Status.IMD_State
-BMS.BMS_Status.Max_Cell_Temp
-BMS.BMS_Status.Min_Cell_Temp
-BMS.BMS_Status.Max_Cell_Voltage
-BMS.BMS_Status.Min_Cell_Voltage
-BMS.BMS_Status.BMS_SOC
-BMS.BMS_Temperatures_0.Cell_T_0
-BMS.BMS_Temperatures_0.Cell_T_1
-BMS.BMS_Temperatures_0.Cell_T_2
-BMS.BMS_Temperatures_0.Cell_T_3
-BMS.BMS_Temperatures_0.Cell_T_4
-BMS.BMS_Temperatures_0.Cell_T_5
-BMS.BMS_Temperatures_0.Cell_T_6
-BMS.BMS_Temperatures_0.Cell_T_7
-BMS.BMS_Temperatures_1.Cell_T_8
-BMS.BMS_Temperatures_1.Cell_T_9
-BMS.BMS_Temperatures_1.Cell_T_10
-BMS.BMS_Temperatures_1.Cell_T_11
-BMS.BMS_Temperatures_1.Cell_T_12
-BMS.BMS_Temperatures_1.Cell_T_13
-BMS.BMS_Temperatures_1.Cell_T_14
-BMS.BMS_Temperatures_1.Cell_T_15
-BMS.BMS_Temperatures_2.Cell_T_16
-BMS.BMS_Temperatures_2.Cell_T_17
-BMS.BMS_Temperatures_2.Cell_T_18
-BMS.BMS_Temperatures_2.Cell_T_19
-BMS.BMS_Temperatures_2.Cell_T_20
-BMS.BMS_Temperatures_2.Cell_T_21
-BMS.BMS_Temperatures_2.Cell_T_22
-BMS.BMS_Temperatures_2.Cell_T_23
-BMS.BMS_Temperatures_3.Cell_T_24
-BMS.BMS_Temperatures_3.Cell_T_25
-BMS.BMS_Temperatures_3.Cell_T_26
-BMS.BMS_Temperatures_3.Cell_T_27
-BMS.BMS_Temperatures_3.Cell_T_28
-BMS.BMS_Temperatures_3.Cell_T_29
-BMS.BMS_Temperatures_3.Cell_T_30
-BMS.BMS_Temperatures_3.Cell_T_31
-BMS.BMS_Temperatures_4.Cell_T_32
-BMS.BMS_Temperatures_4.Cell_T_33
-BMS.BMS_Temperatures_4.Cell_T_34
-BMS.BMS_Temperatures_4.Cell_T_35
-BMS.BMS_Temperatures_4.Cell_T_36
-BMS.BMS_Temperatures_4.Cell_T_37
-BMS.BMS_Temperatures_4.Cell_T_38
-BMS.BMS_Temperatures_4.Cell_T_39
-BMS.BMS_Temperatures_5.Cell_T_40
-BMS.BMS_Temperatures_5.Cell_T_41
-BMS.BMS_Temperatures_5.Cell_T_42
-BMS.BMS_Temperatures_5.Cell_T_43
-BMS.BMS_Temperatures_5.Cell_T_44
-BMS.BMS_Temperatures_5.Cell_T_45
-BMS.BMS_Temperatures_5.Cell_T_46
-BMS.BMS_Temperatures_5.Cell_T_47
-BMS.BMS_Temperatures_6.Cell_T_48
-BMS.BMS_Temperatures_6.Cell_T_49
-BMS.BMS_Temperatures_6.Cell_T_50
-BMS.BMS_Temperatures_6.Cell_T_51
-BMS.BMS_Temperatures_6.Cell_T_52
-BMS.BMS_Temperatures_6.Cell_T_53
-BMS.BMS_Temperatures_6.Cell_T_54
-BMS.BMS_Temperatures_6.Cell_T_55
-BMS.BMS_Temperatures_7.Cell_T_56
-BMS.BMS_Temperatures_7.Cell_T_57
-BMS.BMS_Temperatures_7.Cell_T_58
-BMS.BMS_Temperatures_7.Cell_T_59
-BMS.BMS_Temperatures_7.Cell_T_60
-BMS.BMS_Temperatures_7.Cell_T_61
-BMS.BMS_Temperatures_7.Cell_T_62
-BMS.BMS_Temperatures_7.Cell_T_63
-BMS.BMS_Temperatures_8.Cell_T_64
-BMS.BMS_Temperatures_8.Cell_T_65
-BMS.BMS_Temperatures_8.Cell_T_66
-BMS.BMS_Temperatures_8.Cell_T_67
-BMS.BMS_Temperatures_8.Cell_T_68
-BMS.BMS_Temperatures_8.Cell_T_69
-BMS.BMS_Temperatures_8.Cell_T_70
-BMS.BMS_Temperatures_8.Cell_T_71
-BMS.BMS_Temperatures_9.Cell_T_72
-BMS.BMS_Temperatures_9.Cell_T_73
-BMS.BMS_Temperatures_9.Cell_T_74
-BMS.BMS_Temperatures_9.Cell_T_75
-BMS.BMS_Temperatures_9.Cell_T_76
-BMS.BMS_Temperatures_9.Cell_T_77
-BMS.BMS_Temperatures_9.Cell_T_78
-BMS.BMS_Temperatures_9.Cell_T_79
-BMS.BMS_Voltages_0.Cell_V_0
-BMS.BMS_Voltages_0.Cell_V_1
-BMS.BMS_Voltages_0.Cell_V_2
-BMS.BMS_Voltages_0.Cell_V_3
-BMS.BMS_Voltages_0.Cell_V_4
-BMS.BMS_Voltages_0.Cell_V_5
-BMS.BMS_Voltages_0.Cell_V_6
-BMS.BMS_Voltages_0.Cell_OCV_Offset_0
-BMS.BMS_Voltages_1.Cell_V_7
-BMS.BMS_Voltages_1.Cell_V_8
-BMS.BMS_Voltages_1.Cell_V_9
-BMS.BMS_Voltages_1.Cell_V_10
-BMS.BMS_Voltages_1.Cell_V_11
-BMS.BMS_Voltages_1.Cell_V_12
-BMS.BMS_Voltages_1.Cell_V_13
-BMS.BMS_Voltages_1.Cell_OCV_Offset_1
-BMS.BMS_Voltages_10.Cell_V_70
-BMS.BMS_Voltages_10.Cell_V_71
-BMS.BMS_Voltages_10.Cell_V_72
-BMS.BMS_Voltages_10.Cell_V_73
-BMS.BMS_Voltages_10.Cell_V_74
-BMS.BMS_Voltages_10.Cell_V_75
-BMS.BMS_Voltages_10.Cell_V_76
-BMS.BMS_Voltages_10.Cell_OCV_Offset_10
-BMS.BMS_Voltages_11.Cell_V_77
-BMS.BMS_Voltages_11.Cell_V_78
-BMS.BMS_Voltages_11.Cell_V_79
-BMS.BMS_Voltages_11.Cell_V_80
-BMS.BMS_Voltages_11.Cell_V_81
-BMS.BMS_Voltages_11.Cell_V_82
-BMS.BMS_Voltages_11.Cell_V_83
-BMS.BMS_Voltages_11.Cell_OCV_Offset_11
-BMS.BMS_Voltages_12.Cell_V_84
-BMS.BMS_Voltages_12.Cell_V_85
-BMS.BMS_Voltages_12.Cell_V_86
-BMS.BMS_Voltages_12.Cell_V_87
-BMS.BMS_Voltages_12.Cell_V_88
-BMS.BMS_Voltages_12.Cell_V_89
-BMS.BMS_Voltages_12.Cell_V_90
-BMS.BMS_Voltages_12.Cell_OCV_Offset_12
-BMS.BMS_Voltages_13.Cell_V_91
-BMS.BMS_Voltages_13.Cell_V_92
-BMS.BMS_Voltages_13.Cell_V_93
-BMS.BMS_Voltages_13.Cell_V_94
-BMS.BMS_Voltages_13.Cell_V_95
-BMS.BMS_Voltages_13.Cell_V_96
-BMS.BMS_Voltages_13.Cell_V_97
-BMS.BMS_Voltages_13.Cell_OCV_Offset_13
-BMS.BMS_Voltages_14.Cell_V_98
-BMS.BMS_Voltages_14.Cell_V_99
-BMS.BMS_Voltages_14.Cell_V_100
-BMS.BMS_Voltages_14.Cell_V_101
-BMS.BMS_Voltages_14.Cell_V_102
-BMS.BMS_Voltages_14.Cell_V_103
-BMS.BMS_Voltages_14.Cell_V_104
-BMS.BMS_Voltages_14.Cell_OCV_Offset_14
-BMS.BMS_Voltages_15.Cell_V_105
-BMS.BMS_Voltages_15.Cell_V_106
-BMS.BMS_Voltages_15.Cell_V_107
-BMS.BMS_Voltages_15.Cell_V_108
-BMS.BMS_Voltages_15.Cell_V_109
-BMS.BMS_Voltages_15.Cell_V_110
-BMS.BMS_Voltages_15.Cell_V_111
-BMS.BMS_Voltages_15.Cell_OCV_Offset_15
-BMS.BMS_Voltages_16.Cell_V_112
-BMS.BMS_Voltages_16.Cell_V_113
-BMS.BMS_Voltages_16.Cell_V_114
-BMS.BMS_Voltages_16.Cell_V_115
-BMS.BMS_Voltages_16.Cell_V_116
-BMS.BMS_Voltages_16.Cell_V_117
-BMS.BMS_Voltages_16.Cell_V_118
-BMS.BMS_Voltages_16.Cell_OCV_Offset_16
-BMS.BMS_Voltages_17.Cell_V_119
-BMS.BMS_Voltages_17.Cell_V_120
-BMS.BMS_Voltages_17.Cell_V_121
-BMS.BMS_Voltages_17.Cell_V_122
-BMS.BMS_Voltages_17.Cell_V_123
-BMS.BMS_Voltages_17.Cell_V_124
-BMS.BMS_Voltages_17.Cell_V_125
-BMS.BMS_Voltages_17.Cell_OCV_Offset_17
-BMS.BMS_Voltages_18.Cell_V_126
-BMS.BMS_Voltages_18.Cell_V_127
-BMS.BMS_Voltages_18.Cell_V_128
-BMS.BMS_Voltages_18.Cell_V_129
-BMS.BMS_Voltages_18.Cell_V_130
-BMS.BMS_Voltages_18.Cell_V_131
-BMS.BMS_Voltages_18.Cell_V_132
-BMS.BMS_Voltages_18.Cell_OCV_Offset_18
-BMS.BMS_Voltages_19.Cell_V_133
-BMS.BMS_Voltages_19.Cell_V_134
-BMS.BMS_Voltages_19.Cell_V_135
-BMS.BMS_Voltages_19.Cell_V_136
-BMS.BMS_Voltages_19.Cell_V_137
-BMS.BMS_Voltages_19.Cell_V_138
-BMS.BMS_Voltages_19.Cell_V_139
-BMS.BMS_Voltages_19.Cell_OCV_Offset_19
-BMS.BMS_Voltages_2.Cell_V_14
-BMS.BMS_Voltages_2.Cell_V_15
-BMS.BMS_Voltages_2.Cell_V_16
-BMS.BMS_Voltages_2.Cell_V_17
-BMS.BMS_Voltages_2.Cell_V_18
-BMS.BMS_Voltages_2.Cell_V_19
-BMS.BMS_Voltages_2.Cell_V_20
-BMS.BMS_Voltages_2.Cell_OCV_Offset_2
-BMS.BMS_Voltages_3.Cell_V_21
-BMS.BMS_Voltages_3.Cell_V_22
-BMS.BMS_Voltages_3.Cell_V_23
-BMS.BMS_Voltages_3.Cell_V_24
-BMS.BMS_Voltages_3.Cell_V_25
-BMS.BMS_Voltages_3.Cell_V_26
-BMS.BMS_Voltages_3.Cell_V_27
-BMS.BMS_Voltages_3.Cell_OCV_Offset_3
-BMS.BMS_Voltages_4.Cell_V_28
-BMS.BMS_Voltages_4.Cell_V_29
-BMS.BMS_Voltages_4.Cell_V_30
-BMS.BMS_Voltages_4.Cell_V_31
-BMS.BMS_Voltages_4.Cell_V_32
-BMS.BMS_Voltages_4.Cell_V_33
-BMS.BMS_Voltages_4.Cell_V_34
-BMS.BMS_Voltages_4.Cell_OCV_Offset_4
-BMS.BMS_Voltages_5.Cell_V_35
-BMS.BMS_Voltages_5.Cell_V_36
-BMS.BMS_Voltages_5.Cell_V_37
-BMS.BMS_Voltages_5.Cell_V_38
-BMS.BMS_Voltages_5.Cell_V_39
-BMS.BMS_Voltages_5.Cell_V_40
-BMS.BMS_Voltages_5.Cell_V_41
-BMS.BMS_Voltages_5.Cell_OCV_Offset_5
-BMS.BMS_Voltages_6.Cell_V_42
-BMS.BMS_Voltages_6.Cell_V_43
-BMS.BMS_Voltages_6.Cell_V_44
-BMS.BMS_Voltages_6.Cell_V_45
-BMS.BMS_Voltages_6.Cell_V_46
-BMS.BMS_Voltages_6.Cell_V_47
-BMS.BMS_Voltages_6.Cell_V_48
-BMS.BMS_Voltages_6.Cell_OCV_Offset_6
-BMS.BMS_Voltages_7.Cell_V_49
-BMS.BMS_Voltages_7.Cell_V_50
-BMS.BMS_Voltages_7.Cell_V_51
-BMS.BMS_Voltages_7.Cell_V_52
-BMS.BMS_Voltages_7.Cell_V_53
-BMS.BMS_Voltages_7.Cell_V_54
-BMS.BMS_Voltages_7.Cell_V_55
-BMS.BMS_Voltages_7.Cell_OCV_Offset_7
-BMS.BMS_Voltages_8.Cell_V_56
-BMS.BMS_Voltages_8.Cell_V_57
-BMS.BMS_Voltages_8.Cell_V_58
-BMS.BMS_Voltages_8.Cell_V_59
-BMS.BMS_Voltages_8.Cell_V_60
-BMS.BMS_Voltages_8.Cell_V_61
-BMS.BMS_Voltages_8.Cell_V_62
-BMS.BMS_Voltages_8.Cell_OCV_Offset_8
-BMS.BMS_Voltages_9.Cell_V_63
-BMS.BMS_Voltages_9.Cell_V_64
-BMS.BMS_Voltages_9.Cell_V_65
-BMS.BMS_Voltages_9.Cell_V_66
-BMS.BMS_Voltages_9.Cell_V_67
-BMS.BMS_Voltages_9.Cell_V_68
-BMS.BMS_Voltages_9.Cell_V_69
-BMS.BMS_Voltages_9.Cell_OCV_Offset_9
-CAN2USB.CAN2USB_Controller_Error.Controller_Error
-CAN2USB.CAN2USB_Controller_Error_NACK_Error.Controller_Error_NACK
-CAN2USB.CAN2USB_Controller_Error_Protocol_Violation.Controller_Error_Protocol_Violation
-CANMaster.CM_Node_Status_DAQ.Dynamics_Status
-CANMaster.CM_Node_Status_DAQ.Front_Status
-CANMaster.CM_Node_Status_DAQ.Telemetry_Status
-CANMaster.CM_Node_Status_Drivetrain.ECU_Status
-CANMaster.CM_Node_Status_Drivetrain.BMS_Status
-CANMaster.CM_Node_Status_Drivetrain.PDM_Status
-CANMaster.CM_Node_Status_Wheel.BL_Status
-CANMaster.CM_Node_Status_Wheel.BR_Status
-CANMaster.CM_Node_Status_Wheel.FL_Status
-CANMaster.CM_Node_Status_Wheel.FR_Status
-CANMaster.CM_Request_DAQ.Dynamics_Enable_Response
-CANMaster.CM_Request_DAQ.Front_Enable_Response
-CANMaster.CM_Request_DAQ.Telemetry_Enable_Response
-CANMaster.CM_Request_Drivetrain.ECU_Enable_Response
-CANMaster.CM_Request_Drivetrain.BMS_Enable_Response
-CANMaster.CM_Request_Drivetrain.PDM_Enable_Response
-CANMaster.CM_Request_Wheel.BL_Enable_Response
-CANMaster.CM_Request_Wheel.BR_Enable_Response
-CANMaster.CM_Request_Wheel.FL_Enable_Response
-CANMaster.CM_Request_Wheel.FR_Enable_Response
-CANMaster.CM_Response_BL.Counter
-CANMaster.CM_Response_BMS.Counter
-CANMaster.CM_Response_BR.Counter
-CANMaster.CM_Response_Dynamics.Counter
-CANMaster.CM_Response_ECU.Counter
-CANMaster.CM_Response_FL.Counter
-CANMaster.CM_Response_FR.Counter
-CANMaster.CM_Response_Front.Counter
-CANMaster.CM_Response_PDM.Counter
-CANMaster.CM_Response_Telemetry.Counter
-DAQ-BL-Wheel.DAQ_Wheel_BL.BL_Speed
-DAQ-BL-Wheel.DAQ_Wheel_BL.BL_Displacement
-DAQ-BL-Wheel.DAQ_Wheel_BL.BL_Load_Sig
-DAQ-BL-Wheel.DAQ_Wheel_Back_Left_Inner_Temps.BLI_Temperature_4
-DAQ-BL-Wheel.DAQ_Wheel_Back_Left_Inner_Temps.BLI_Temperature_5
-DAQ-BL-Wheel.DAQ_Wheel_Back_Left_Inner_Temps.BLI_Temperature_6
-DAQ-BL-Wheel.DAQ_Wheel_Back_Left_Inner_Temps.BLI_Temperature_7
-DAQ-BL-Wheel.DAQ_Wheel_Back_Left_Outer_Temps.BLO_Temperature_0
-DAQ-BL-Wheel.DAQ_Wheel_Back_Left_Outer_Temps.BLO_Temperature_1
-DAQ-BL-Wheel.DAQ_Wheel_Back_Left_Outer_Temps.BLO_Temperature_2
-DAQ-BL-Wheel.DAQ_Wheel_Back_Left_Outer_Temps.BLO_Temperature_3
-DAQ-BR-Wheel.DAQ_Wheel_BR.BR_Speed
-DAQ-BR-Wheel.DAQ_Wheel_BR.BR_Displacement
-DAQ-BR-Wheel.DAQ_Wheel_BR.BR_Load_Sig
-DAQ-BR-Wheel.DAQ_Wheel_Back_Right_Inner_Temps.BRI_Temperature_4
-DAQ-BR-Wheel.DAQ_Wheel_Back_Right_Inner_Temps.BRI_Temperature_5
-DAQ-BR-Wheel.DAQ_Wheel_Back_Right_Inner_Temps.BRI_Temperature_6
-DAQ-BR-Wheel.DAQ_Wheel_Back_Right_Inner_Temps.BRI_Temperature_7
-DAQ-BR-Wheel.DAQ_Wheel_Back_Right_Outer_Temps.BRO_Temperature_0
-DAQ-BR-Wheel.DAQ_Wheel_Back_Right_Outer_Temps.BRO_Temperature_1
-DAQ-BR-Wheel.DAQ_Wheel_Back_Right_Outer_Temps.BRO_Temperature_2
-DAQ-BR-Wheel.DAQ_Wheel_Back_Right_Outer_Temps.BRO_Temperature_3
-DAQ-Back.DAQ_Coolant_Flow_Rates.Before_Motor_Flow_Rate
-DAQ-Back.DAQ_Coolant_Flow_Rates.Before_Accumulator_Flow_Rate
-DAQ-Back.DAQ_Coolant_Temps.Before_Motor_Temperature
-DAQ-Back.DAQ_Coolant_Temps.Before_Accumulator_Temperature
-DAQ-Back.DAQ_Dynamics_IMU_Acceleration.X_Acceleration
-DAQ-Back.DAQ_Dynamics_IMU_Acceleration.Y_Acceleration
-DAQ-Back.DAQ_Dynamics_IMU_Acceleration.Z_Acceleration
-DAQ-Back.DAQ_Dynamics_IMU_Gryo.X_Angular_Speed
-DAQ-Back.DAQ_Dynamics_IMU_Gryo.Y_Angular_Speed
-DAQ-Back.DAQ_Dynamics_IMU_Gryo.Z_Angular_Speed
-DAQ-Back.DAQ_Dynamics_Pitot_Lower.Air_Speed_0
-DAQ-Back.DAQ_Dynamics_Pitot_Lower.Air_Speed_1
-DAQ-Back.DAQ_Dynamics_Pitot_Lower.Air_Speed_2
-DAQ-Back.DAQ_Dynamics_Pitot_Lower.Air_Speed_3
-DAQ-Back.DAQ_Dynamics_Pitot_Upper.Air_Speed_4
-DAQ-Back.DAQ_Dynamics_Pitot_Upper.Air_Speed_5
-DAQ-Back.DAQ_Dynamics_Pitot_Upper.Air_Speed_6
-DAQ-Back.DAQ_Dynamics_Pitot_Upper.Air_Speed_7
-DAQ-FL-Wheel.DAQ_Wheel_FL.FL_Speed
-DAQ-FL-Wheel.DAQ_Wheel_FL.FL_Displacement
-DAQ-FL-Wheel.DAQ_Wheel_FL.FL_Load_Sig
-DAQ-FL-Wheel.DAQ_Wheel_Front_Left_Inner_Temps.FLI_Temperature_4
-DAQ-FL-Wheel.DAQ_Wheel_Front_Left_Inner_Temps.FLI_Temperature_5
-DAQ-FL-Wheel.DAQ_Wheel_Front_Left_Inner_Temps.FLI_Temperature_6
-DAQ-FL-Wheel.DAQ_Wheel_Front_Left_Inner_Temps.FLI_Temperature_7
-DAQ-FL-Wheel.DAQ_Wheel_Front_Left_Outer_Temps.FLO_Temperature_0
-DAQ-FL-Wheel.DAQ_Wheel_Front_Left_Outer_Temps.FLO_Temperature_1
-DAQ-FL-Wheel.DAQ_Wheel_Front_Left_Outer_Temps.FLO_Temperature_2
-DAQ-FL-Wheel.DAQ_Wheel_Front_Left_Outer_Temps.FLO_Temperature_3
-DAQ-FR-Wheel.DAQ_Wheel_FR.FR_Speed
-DAQ-FR-Wheel.DAQ_Wheel_FR.FR_Displacement
-DAQ-FR-Wheel.DAQ_Wheel_FR.FR_Load_Sig
-DAQ-FR-Wheel.DAQ_Wheel_Front_Right_Inner_Temps.FRI_Temperature_4
-DAQ-FR-Wheel.DAQ_Wheel_Front_Right_Inner_Temps.FRI_Temperature_5
-DAQ-FR-Wheel.DAQ_Wheel_Front_Right_Inner_Temps.FRI_Temperature_6
-DAQ-FR-Wheel.DAQ_Wheel_Front_Right_Inner_Temps.FRI_Temperature_7
-DAQ-FR-Wheel.DAQ_Wheel_Front_Right_Outer_Temps.FRO_Temperature_0
-DAQ-FR-Wheel.DAQ_Wheel_Front_Right_Outer_Temps.FRO_Temperature_1
-DAQ-FR-Wheel.DAQ_Wheel_Front_Right_Outer_Temps.FRO_Temperature_2
-DAQ-FR-Wheel.DAQ_Wheel_Front_Right_Outer_Temps.FRO_Temperature_3
-DAQ-Front.DAQ_Dynamics_Steering.Steering_Angle
-DAQ-Front.DAQ_LUT_Metadata.File_Status
-DAQ-Front.DAQ_LUT_Metadata.Num_Lut_Pairs
-DAQ-Front.DAQ_LUT_Metadata.Interp_Type
-DAQ-Front.DAQ_LUT_Metadata.Lut_Id
-DAQ-Front.DAQ_LUT_Pair_Eight_Nine.X_Eight
-DAQ-Front.DAQ_LUT_Pair_Eight_Nine.Y_Eight
-DAQ-Front.DAQ_LUT_Pair_Eight_Nine.X_Nine
-DAQ-Front.DAQ_LUT_Pair_Eight_Nine.Y_Nine
-DAQ-Front.DAQ_LUT_Pair_Eighteen_Nineteen.X_Eighteen
-DAQ-Front.DAQ_LUT_Pair_Eighteen_Nineteen.Y_Eighteen
-DAQ-Front.DAQ_LUT_Pair_Eighteen_Nineteen.X_Nineteen
-DAQ-Front.DAQ_LUT_Pair_Eighteen_Nineteen.Y_Nineteen
-DAQ-Front.DAQ_LUT_Pair_Four_Five.X_Four
-DAQ-Front.DAQ_LUT_Pair_Four_Five.Y_Four
-DAQ-Front.DAQ_LUT_Pair_Four_Five.X_Five
-DAQ-Front.DAQ_LUT_Pair_Four_Five.Y_Five
-DAQ-Front.DAQ_LUT_Pair_Fourteen_Fifteen.X_Fourteen
-DAQ-Front.DAQ_LUT_Pair_Fourteen_Fifteen.Y_Fourteen
-DAQ-Front.DAQ_LUT_Pair_Fourteen_Fifteen.X_Fifteen
-DAQ-Front.DAQ_LUT_Pair_Fourteen_Fifteen.Y_Fifteen
-DAQ-Front.DAQ_LUT_Pair_Six_Seven.X_Six
-DAQ-Front.DAQ_LUT_Pair_Six_Seven.Y_Six
-DAQ-Front.DAQ_LUT_Pair_Six_Seven.X_Seven
-DAQ-Front.DAQ_LUT_Pair_Six_Seven.Y_Seven
-DAQ-Front.DAQ_LUT_Pair_Sixteen_Seventeen.X_Sixteen
-DAQ-Front.DAQ_LUT_Pair_Sixteen_Seventeen.Y_Sixteen
-DAQ-Front.DAQ_LUT_Pair_Sixteen_Seventeen.X_Seventeen
-DAQ-Front.DAQ_LUT_Pair_Sixteen_Seventeen.Y_Seventeen
-DAQ-Front.DAQ_LUT_Pair_Ten_Eleven.X_Ten
-DAQ-Front.DAQ_LUT_Pair_Ten_Eleven.Y_Ten
-DAQ-Front.DAQ_LUT_Pair_Ten_Eleven.X_Eleven
-DAQ-Front.DAQ_LUT_Pair_Ten_Eleven.Y_Eleven
-DAQ-Front.DAQ_LUT_Pair_Twelve_Thirteen.X_Twelve
-DAQ-Front.DAQ_LUT_Pair_Twelve_Thirteen.Y_Twelve
-DAQ-Front.DAQ_LUT_Pair_Twelve_Thirteen.X_Thirteen
-DAQ-Front.DAQ_LUT_Pair_Twelve_Thirteen.Y_Thirteen
-DAQ-Front.DAQ_LUT_Pair_Twenty_Eight_Twenty_Nine.X_Twenty_Eight
-DAQ-Front.DAQ_LUT_Pair_Twenty_Eight_Twenty_Nine.Y_Twenty_Eight
-DAQ-Front.DAQ_LUT_Pair_Twenty_Eight_Twenty_Nine.X_Twenty_Nine
-DAQ-Front.DAQ_LUT_Pair_Twenty_Eight_Twenty_Nine.Y_Twenty_Nine
-DAQ-Front.DAQ_LUT_Pair_Twenty_Four_Twenty_Five.X_Twenty_Four
-DAQ-Front.DAQ_LUT_Pair_Twenty_Four_Twenty_Five.Y_Twenty_Four
-DAQ-Front.DAQ_LUT_Pair_Twenty_Four_Twenty_Five.X_Twenty_Five
-DAQ-Front.DAQ_LUT_Pair_Twenty_Four_Twenty_Five.Y_Twenty_Five
-DAQ-Front.DAQ_LUT_Pair_Twenty_Six_Twenty_Seven.X_Twenty_Six
-DAQ-Front.DAQ_LUT_Pair_Twenty_Six_Twenty_Seven.Y_Twenty_Six
-DAQ-Front.DAQ_LUT_Pair_Twenty_Six_Twenty_Seven.X_Twenty_Seven
-DAQ-Front.DAQ_LUT_Pair_Twenty_Six_Twenty_Seven.Y_Twenty_Seven
-DAQ-Front.DAQ_LUT_Pair_Twenty_Twenty_One.X_Twenty
-DAQ-Front.DAQ_LUT_Pair_Twenty_Twenty_One.Y_Twenty
-DAQ-Front.DAQ_LUT_Pair_Twenty_Twenty_One.X_Twenty_One
-DAQ-Front.DAQ_LUT_Pair_Twenty_Twenty_One.Y_Twenty_One
-DAQ-Front.DAQ_LUT_Pair_Twenty_Two_Twenty_Three.X_Twenty_Two
-DAQ-Front.DAQ_LUT_Pair_Twenty_Two_Twenty_Three.Y_Twenty_Two
-DAQ-Front.DAQ_LUT_Pair_Twenty_Two_Twenty_Three.X_Twenty_Three
-DAQ-Front.DAQ_LUT_Pair_Twenty_Two_Twenty_Three.Y_Twenty_Three
-DAQ-Front.DAQ_LUT_Pair_Two_Three.X_Two
-DAQ-Front.DAQ_LUT_Pair_Two_Three.Y_Two
-DAQ-Front.DAQ_LUT_Pair_Two_Three.X_Three
-DAQ-Front.DAQ_LUT_Pair_Two_Three.Y_Three
-DAQ-Front.DAQ_LUT_Pair_Zero_One.X_Zero
-DAQ-Front.DAQ_LUT_Pair_Zero_One.Y_Zero
-DAQ-Front.DAQ_LUT_Pair_Zero_One.X_One
-DAQ-Front.DAQ_LUT_Pair_Zero_One.Y_One
-DAQ-Telemetry.DAQ_GPS.Longitude
-DAQ-Telemetry.DAQ_GPS.Latitude
-DAQ-Telemetry.DAQ_RTC.Time_Since_1970
-DAQ-Telemetry.DAQ_Telemetry_Status.Wireless_Status
-DAQ-Telemetry.DAQ_Telemetry_Status.Logger_Status
-ECU.ECU_Active_Aero_Command.Active_Aero_State
-ECU.ECU_Active_Aero_Command.Active_Aero_Position
-ECU.ECU_BMS_Command_Message.BMS_Command
-ECU.ECU_Brake.Front_Brake_Pressure
-ECU.ECU_Brake.Rear_Brake_Pressure
-ECU.ECU_Brake.Brake_Pressed
-ECU.ECU_Drive_Status.Drive_State
-ECU.ECU_Implausibility.Implausibility_Present
-ECU.ECU_Implausibility.APPSs_Disagreement_Imp
-ECU.ECU_Implausibility.BPPC_Imp
-ECU.ECU_Implausibility.Brake_Invalid_Imp
-ECU.ECU_Implausibility.APPSs_Invalid_Imp
-ECU.ECU_LUT_Response.Accel_LUT_Id_Response
-ECU.ECU_Pump_Fan_Command.Pump_Duty_Cycle
-ECU.ECU_Pump_Fan_Command.Fan_Duty_Cycle
-ECU.ECU_Set_Current.Set_Current
-ECU.ECU_Set_Current_Brake.Set_Current_Brake
-ECU.ECU_Temp_Limiting_Status.IGBT_Temp_Limiting
-ECU.ECU_Temp_Limiting_Status.Battery_Temp_Limiting
-ECU.ECU_Temp_Limiting_Status.Motor_Temp_Limiting
-ECU.ECU_Throttle.APPS1_Throttle
-ECU.ECU_Throttle.APPS2_Throttle
-ECU.ECU_Torque_Status.Torque_Status
-IMD.PGN_Info_General.Isolation_R_iso_corrected
-IMD.PGN_Info_General.Isolation_R_iso_status
-IMD.PGN_Info_General.Isolation_Measurement_Counter
-IMD.PGN_Info_General.Status_Warnings_And_Alarms
-IMD.PGN_Info_General.Status_Device_Activity
-Inverter.Inverter_Current_Draw.Ah_Drawn
-Inverter.Inverter_Current_Draw.Ah_Charged
-Inverter.Inverter_Fault_Status.Fault_Code
-Inverter.Inverter_Motor_Status.RPM
-Inverter.Inverter_Motor_Status.Motor_Current
-Inverter.Inverter_Motor_Status.DC_Voltage
-Inverter.Inverter_Motor_Status.DC_Current
-Inverter.Inverter_Power_Draw.Wh_Drawn
-Inverter.Inverter_Power_Draw.Wh_Charged
-Inverter.Inverter_Temp_Status.IGBT_Temp
-Inverter.Inverter_Temp_Status.Motor_Temp
-PDM.PDM_Bat_Volt.Bat_Volt
-PDM.PDM_Bat_Volt.Bat_Volt_Warning
-PDM.PDM_Current.Gen_Amps
-PDM.PDM_Current.Fan_Amps
-PDM.PDM_Current.Pump_Amps
-PDM.PDM_EFuse_Reset.Reset_Gen_Efuse
-PDM.PDM_EFuse_Reset.Reset_AC_Efuse
-PDM.PDM_EFuse_Triggered.Gen_EFuse_Triggered
+# Complete mapping from telemetry fields to CarDB attributes
+
+# Time fields
+"time_since_startup": "time.time_since_startup"
+"unix_time": "???"
+
+# BMS Faults (10 flags)
+"BMS.BMS_Faults.Fault_Summary": "bms.faults[0]"
+"BMS.BMS_Faults.Undervoltage_Fault": "bms.faults[1]"
+"BMS.BMS_Faults.Overvoltage_Fault": "bms.faults[2]"
+"BMS.BMS_Faults.Undertemperature_Fault": "bms.faults[3]"
+"BMS.BMS_Faults.Overtemperature_Fault": "bms.faults[4]"
+"BMS.BMS_Faults.Overcurrent_Fault": "bms.faults[5]"
+"BMS.BMS_Faults.External_Kill_Fault": "bms.faults[6]"
+"BMS.BMS_Faults.Open_Wire_Fault": "bms.faults[7]"
+"BMS.BMS_Faults.Open_Wire_Temp_Fault": "???"
+"BMS.BMS_Faults.Pec_Fault": "???"
+"BMS.BMS_Faults.Total_PEC_Failures": "???"
+
+# BMS SOE
+"BMS.BMS_SOE.Max_Discharge_Current": "bms.soe_max_discharge_current"
+"BMS.BMS_SOE.Max_Regen_Current":    "bms.soe_max_regen_current"
+"BMS.BMS_SOE.Battery_Voltage":      "bms.soe_bat_voltage"
+"BMS.BMS_SOE.Battery_Temperature":  "bms.soe_bat_temp"
+"BMS.BMS_SOE.Battery_Current":      "bms.soe_bat_current"
+
+# BMS Status
+"BMS.BMS_Status.BMS_State":         "bms.bms_state"
+"BMS.BMS_Status.IMD_State":         "???"
+"BMS.BMS_Status.Max_Cell_Temp":     "???"
+"BMS.BMS_Status.Min_Cell_Temp":     "???"
+"BMS.BMS_Status.Max_Cell_Voltage":  "???"
+"BMS.BMS_Status.Min_Cell_Voltage":  "???"
+"BMS.BMS_Status.BMS_SOC":           "???"
+
+# BMS Cell Temperatures (0–79)
+{% for i in range(80) %}"BMS.BMS_Temperatures_{{ i//8 }}.Cell_T_{{ i }}": "bms.cell_temps[{{ i }}]"
+{% endfor %}
+
+# BMS Cell Voltages (0–139)
+{% for i in range(140) %}"BMS.BMS_Voltages_{{ i//8 }}.Cell_V_{{ i }}": "bms.cell_voltages[{{ i }}]"
+{% endfor %}
+
+# CAN2USB Error Frame
+"CAN2USB.CAN2USB_Controller_Error.Controller_Error": "???"
+"CAN2USB.CAN2USB_Controller_Error_NACK_Error.Controller_Error_NACK": "???"
+"CAN2USB.CAN2USB_Controller_Error_Protocol_Violation.Controller_Error_Protocol_Violation": "???"
+
+# CANMaster Status & Responses
+{% for sig in [
+  "Dynamics_Status","Front_Status","Telemetry_Status",
+  "ECU_Status","BMS_Status","PDM_Status",
+  "BL_Status","BR_Status","FL_Status","FR_Status",
+  "Dynamics_Enable_Response","Front_Enable_Response","Telemetry_Enable_Response",
+  "ECU_Enable_Response","BMS_Enable_Response","PDM_Enable_Response",
+  "BL_Enable_Response","BR_Enable_Response","FL_Enable_Response","FR_Enable_Response",
+  "Counter"
+] %}"CANMaster.CM_Node_Status_DAQ.{{ sig }}": "???"
+{% endfor %}
+
+# Wheel Corner Data — map to corners list (order BL, BR, FL, FR)
+"DAQ-BL-Wheel.DAQ_Wheel_BL.BL_Speed":           "corners[0].wheel_speed"
+"DAQ-BL-Wheel.DAQ_Wheel_BL.BL_Displacement":   "corners[0].raw_sus_displacement"
+"DAQ-BL-Wheel.DAQ_Wheel_BL.BL_Load_Sig":       "corners[0].pr_strain"
+# BL temperature sensors -> ???
+# BR, FL, FR similarly -> ???
+
+# Dynamics (front/back)
+"DAQ-Back.DAQ_Coolant_Flow_Rates.Before_Motor_Flow_Rate":        "???"
+"DAQ-Back.DAQ_Coolant_Flow_Rates.Before_Accumulator_Flow_Rate":  "???"
+"DAQ-Back.DAQ_Coolant_Temps.Before_Motor_Temperature":          "dynamics.coolant_temps[0]"
+"DAQ-Back.DAQ_Coolant_Temps.Before_Accumulator_Temperature":    "dynamics.coolant_temps[1]"
+"DAQ-Back.DAQ_Dynamics_IMU_Acceleration.X_Acceleration":        "dynamics.imu.accel[0]"
+"DAQ-Back.DAQ_Dynamics_IMU_Acceleration.Y_Acceleration":        "dynamics.imu.accel[1]"
+"DAQ-Back.DAQ_Dynamics_IMU_Acceleration.Z_Acceleration":        "dynamics.imu.accel[2]"
+"DAQ-Back.DAQ_Dynamics_IMU_Gryo.X_Angular_Speed":               "dynamics.imu.orientation[0]"
+"DAQ-Back.DAQ_Dynamics_IMU_Gryo.Y_Angular_Speed":               "dynamics.imu.orientation[1]"
+"DAQ-Back.DAQ_Dynamics_IMU_Gryo.Z_Angular_Speed":               "dynamics.imu.orientation[2]"
+{% for j in range(8) %}"DAQ-Back.DAQ_Dynamics_Pitot_Lower.Air_Speed_{{ j }}":   "dynamics.air_speed[{{ j }}]"
+"DAQ-Back.DAQ_Dynamics_Pitot_Upper.Air_Speed_{{ j+4 }}":         "dynamics.air_speed[{{ j+4 }}]"
+{% endfor %}
+
+# Steering & GPS
+"DAQ-Front.DAQ_Dynamics_Steering.Steering_Angle":     "dynamics.steering_angle"
+"DAQ-Telemetry.DAQ_GPS.Longitude":                   "???"
+"DAQ-Telemetry.DAQ_GPS.Latitude":                    "???"
+"DAQ-Telemetry.DAQ_RTC.Time_Since_1970":             "???"
+"DAQ-Telemetry.DAQ_Telemetry_Status.Wireless_Status": "???"
+"DAQ-Telemetry.DAQ_Telemetry_Status.Logger_Status":   "???"
+
+# PDM
+"PDM.PDM_Current.Gen_Amps":              "pdm.gen_amps"
+"PDM.PDM_Current.Fan_Amps":              "pdm.fan_amps"
+"PDM.PDM_Current.Pump_Amps":             "pdm.pump_amps"
+"PDM.PDM_Bat_Volt.Bat_Volt":             "pdm.bat_voltage"
+"PDM.PDM_Bat_Volt.Bat_Volt_Warning":     "pdm.bat_voltage_warning"
+"PDM.PDM_EFuse_Reset.Reset_Gen_Efuse":   "???"
+"PDM.PDM_EFuse_Reset.Reset_AC_Efuse":    "???"
+"PDM.PDM_EFuse_Triggered.Gen_EFuse_Triggered": "pdm.gen_efuse_triggered"
+"PDM.PDM_EFuse_Triggered.AC_EFuse_Triggered":  "???"
+
+# Inverter
+"Inverter.Inverter_Current_Draw.Ah_Drawn":       "inverter.ah_drawn"
+"Inverter.Inverter_Current_Draw.Ah_Charged":     "inverter.ah_charged"
+"Inverter.Inverter_Fault_Status.Fault_Code":     "inverter.fault_code"
+"Inverter.Inverter_Motor_Status.RPM":            "inverter.rpm"
+"Inverter.Inverter_Motor_Status.Motor_Current":  "inverter.motor_current"
+"Inverter.Inverter_Motor_Status.DC_Voltage":     "inverter.dc_voltage"
+"Inverter.Inverter_Motor_Status.DC_Current":     "inverter.dc_current"
+"Inverter.Inverter_Power_Draw.Wh_Drawn":         "inverter.wh_drawn"
+"Inverter.Inverter_Power_Draw.Wh_Charged":       "inverter.wh_charged"
+"Inverter.Inverter_Temp_Status.IGBT_Temp":       "inverter.igbt_temp"
+"Inverter.Inverter_Temp_Status.Motor_Temp":      "inverter.motor_temp"
+
+# ECU
+"ECU.ECU_Brake.Front_Brake_Pressure":       "ecu.brake_pressures[0]"
+"ECU.ECU_Brake.Rear_Brake_Pressure":        "ecu.brake_pressures[1]"
+"ECU.ECU_Brake.Brake_Pressed":              "ecu.brake_pressed"
+"ECU.ECU_Drive_Status.Drive_State":         "ecu.drive_state"
+{% for idx, name in enumerate([
+  "Implausibility_Present","APPSs_Disagreement_Imp","BPPC_Imp",
+  "Brake_Invalid_Imp","APPSs_Invalid_Imp"
+]) %}"ECU.ECU_Implausibility.{{ name }}": "ecu.implausibilities[{{ idx }}]"
+{% endfor %}
+
+# Other ECU fields — no CarDB storage
+"ECU.ECU_Active_Aero_Command.Active_Aero_State":       "???"
+"ECU.ECU_Active_Aero_Command.Active_Aero_Position":    "???"
+"ECU.ECU_BMS_Command_Message.BMS_Command":            "???"
+"ECU.ECU_LUT_Response.Accel_LUT_Id_Response":         "???"
+"ECU.ECU_Pump_Fan_Command.Pump_Duty_Cycle":           "???"
+"ECU.ECU_Pump_Fan_Command.Fan_Duty_Cycle":            "???"
+"ECU.ECU_Set_Current.Set_Current":                   "???"
+"ECU.ECU_Set_Current_Brake.Set_Current_Brake":       "???"
+"ECU.ECU_Temp_Limiting_Status.IGBT_Temp_Limiting":    "???"
+"ECU.ECU_Temp_Limiting_Status.Battery_Temp_Limiting": "???"
+"ECU.ECU_Temp_Limiting_Status.Motor_Temp_Limiting":   "???"
+"ECU.ECU_Throttle.APPS1_Throttle":                    "???"
+"ECU.ECU_Throttle.APPS2_Throttle":                    "???"
+"ECU.ECU_Torque_Status.Torque_Status":                "???"
+
+# IMD — no CarDB storage
+"IMD.PGN_Info_General.Isolation_R_iso_corrected":     "???"
+"IMD.PGN_Info_General.Isolation_R_iso_status":        "???"
+"IMD.PGN_Info_General.Isolation_Measurement_Counter": "???"
+"IMD.PGN_Info_General.Status_Warnings_And_Alarms":    "???"
+"IMD.PGN_Info_General.Status_Device_Activity":        "???"
