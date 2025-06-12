@@ -1,0 +1,149 @@
+# time stamps
+time_since_startup: time.time_since_startup
+unix_time: time.second
+
+# BMS Fault bits (one bit each)
+BMS.BMS_Faults.Fault_Summary:      bms.faults[0]
+BMS.BMS_Faults.Undervoltage_Fault: bms.faults[1]
+BMS.BMS_Faults.Overvoltage_Fault:  bms.faults[2]
+BMS.BMS_Faults.Undertemperature_Fault:    bms.faults[3]
+BMS.BMS_Faults.Overtemperature_Fault:     bms.faults[4]
+BMS.BMS_Faults.Overcurrent_Fault:         bms.faults[5]
+BMS.BMS_Faults.External_Kill_Fault:       bms.faults[6]
+BMS.BMS_Faults.Open_Wire_Fault:           bms.faults[7]
+BMS.BMS_Faults.Open_Wire_Temp_Fault:      bms.faults[8]
+BMS.BMS_Faults.Pec_Fault:                 bms.faults[9]
+BMS.BMS_Faults.Total_PEC_Failures:        bms.faults[10]
+
+
+# State of energy (SOE)
+BMS.BMS_SOE.Max_Discharge_Current:  bms.soe_max_discharge_current
+BMS.BMS_SOE.Max_Regen_Current:      bms.soe_max_regen_current
+BMS.BMS_SOE.Battery_Voltage:        bms.soe_bat_voltage
+BMS.BMS_SOE.Battery_Temperature:    bms.soe_bat_temp
+BMS.BMS_SOE.Battery_Current:        bms.soe_bat_current
+
+# ——————————————————————————————————————————————
+# BMS status & summary fields
+BMS.BMS_Status.BMS_State:           bms.bms_state
+BMS.BMS_Status.IMD_State:           ecu.implausibilities[0]
+BMS.BMS_Status.Max_Cell_Temp:       bms.cell_temps.max()
+BMS.BMS_Status.Min_Cell_Temp:       bms.cell_temps.min()
+BMS.BMS_Status.Max_Cell_Voltage:    bms.cell_voltages.max()
+BMS.BMS_Status.Min_Cell_Voltage:    bms.cell_voltages.min()
+BMS.BMS_Status.BMS_SOC:             bms.soe_bat_voltage
+
+# ——————————————————————————————————————————————
+# Cell temperatures (80 total, in 10 packets of 8)
+# group 0
+BMS.BMS_Temperatures_0.Cell_T_0:    bms.cell_temps[0]
+BMS.BMS_Temperatures_0.Cell_T_1:    bms.cell_temps[1]
+BMS.BMS_Temperatures_0.Cell_T_2:    bms.cell_temps[2]
+BMS.BMS_Temperatures_0.Cell_T_3:    bms.cell_temps[3]
+BMS.BMS_Temperatures_0.Cell_T_4:    bms.cell_temps[4]
+BMS.BMS_Temperatures_0.Cell_T_5:    bms.cell_temps[5]
+BMS.BMS_Temperatures_0.Cell_T_6:    bms.cell_temps[6]
+BMS.BMS_Temperatures_0.Cell_T_7:    bms.cell_temps[7]
+# group 1
+BMS.BMS_Temperatures_1.Cell_T_8:    bms.cell_temps[8]
+BMS.BMS_Temperatures_1.Cell_T_9:    bms.cell_temps[9]
+BMS.BMS_Temperatures_1.Cell_T_10:   bms.cell_temps[10]
+BMS.BMS_Temperatures_1.Cell_T_11:   bms.cell_temps[11]
+BMS.BMS_Temperatures_1.Cell_T_12:   bms.cell_temps[12]
+BMS.BMS_Temperatures_1.Cell_T_13:   bms.cell_temps[13]
+BMS.BMS_Temperatures_1.Cell_T_14:   bms.cell_temps[14]
+BMS.BMS_Temperatures_1.Cell_T_15:   bms.cell_temps[15]
+# group 2
+BMS.BMS_Temperatures_2.Cell_T_16:   bms.cell_temps[16]
+BMS.BMS_Temperatures_2.Cell_T_17:   bms.cell_temps[17]
+BMS.BMS_Temperatures_2.Cell_T_18:   bms.cell_temps[18]
+BMS.BMS_Temperatures_2.Cell_T_19:   bms.cell_temps[19]
+BMS.BMS_Temperatures_2.Cell_T_20:   bms.cell_temps[20]
+BMS.BMS_Temperatures_2.Cell_T_21:   bms.cell_temps[21]
+BMS.BMS_Temperatures_2.Cell_T_22:   bms.cell_temps[22]
+BMS.BMS_Temperatures_2.Cell_T_23:   bms.cell_temps[23]
+# group 3
+BMS.BMS_Temperatures_3.Cell_T_24:   bms.cell_temps[24]
+BMS.BMS_Temperatures_3.Cell_T_25:   bms.cell_temps[25]
+BMS.BMS_Temperatures_3.Cell_T_26:   bms.cell_temps[26]
+BMS.BMS_Temperatures_3.Cell_T_27:   bms.cell_temps[27]
+BMS.BMS_Temperatures_3.Cell_T_28:   bms.cell_temps[28]
+BMS.BMS_Temperatures_3.Cell_T_29:   bms.cell_temps[29]
+BMS.BMS_Temperatures_3.Cell_T_30:   bms.cell_temps[30]
+BMS.BMS_Temperatures_3.Cell_T_31:   bms.cell_temps[31]
+# group 4
+BMS.BMS_Temperatures_4.Cell_T_32:   bms.cell_temps[32]
+BMS.BMS_Temperatures_4.Cell_T_33:   bms.cell_temps[33]
+BMS.BMS_Temperatures_4.Cell_T_34:   bms.cell_temps[34]
+BMS.BMS_Temperatures_4.Cell_T_35:   bms.cell_temps[35]
+BMS.BMS_Temperatures_4.Cell_T_36:   bms.cell_temps[36]
+BMS.BMS_Temperatures_4.Cell_T_37:   bms.cell_temps[37]
+BMS.BMS_Temperatures_4.Cell_T_38:   bms.cell_temps[38]
+BMS.BMS_Temperatures_4.Cell_T_39:   bms.cell_temps[39]
+# group 5
+BMS.BMS_Temperatures_5.Cell_T_40:   bms.cell_temps[40]
+BMS.BMS_Temperatures_5.Cell_T_41:   bms.cell_temps[41]
+BMS.BMS_Temperatures_5.Cell_T_42:   bms.cell_temps[42]
+BMS.BMS_Temperatures_5.Cell_T_43:   bms.cell_temps[43]
+BMS.BMS_Temperatures_5.Cell_T_44:   bms.cell_temps[44]
+BMS.BMS_Temperatures_5.Cell_T_45:   bms.cell_temps[45]
+BMS.BMS_Temperatures_5.Cell_T_46:   bms.cell_temps[46]
+BMS.BMS_Temperatures_5.Cell_T_47:   bms.cell_temps[47]
+# group 6
+BMS.BMS_Temperatures_6.Cell_T_48:   bms.cell_temps[48]
+BMS.BMS_Temperatures_6.Cell_T_49:   bms.cell_temps[49]
+BMS.BMS_Temperatures_6.Cell_T_50:   bms.cell_temps[50]
+BMS.BMS_Temperatures_6.Cell_T_51:   bms.cell_temps[51]
+BMS.BMS_Temperatures_6.Cell_T_52:   bms.cell_temps[52]
+BMS.BMS_Temperatures_6.Cell_T_53:   bms.cell_temps[53]
+BMS.BMS_Temperatures_6.Cell_T_54:   bms.cell_temps[54]
+BMS.BMS_Temperatures_6.Cell_T_55:   bms.cell_temps[55]
+# group 7
+BMS.BMS_Temperatures_7.Cell_T_56:   bms.cell_temps[56]
+BMS.BMS_Temperatures_7.Cell_T_57:   bms.cell_temps[57]
+BMS.BMS_Temperatures_7.Cell_T_58:   bms.cell_temps[58]
+BMS.BMS_Temperatures_7.Cell_T_59:   bms.cell_temps[59]
+BMS.BMS_Temperatures_7.Cell_T_60:   bms.cell_temps[60]
+BMS.BMS_Temperatures_7.Cell_T_61:   bms.cell_temps[61]
+BMS.BMS_Temperatures_7.Cell_T_62:   bms.cell_temps[62]
+BMS.BMS_Temperatures_7.Cell_T_63:   bms.cell_temps[63]
+# group 8
+BMS.BMS_Temperatures_8.Cell_T_64:   bms.cell_temps[64]
+BMS.BMS_Temperatures_8.Cell_T_65:   bms.cell_temps[65]
+BMS.BMS_Temperatures_8.Cell_T_66:   bms.cell_temps[66]
+BMS.BMS_Temperatures_8.Cell_T_67:   bms.cell_temps[67]
+BMS.BMS_Temperatures_8.Cell_T_68:   bms.cell_temps[68]
+BMS.BMS_Temperatures_8.Cell_T_69:   bms.cell_temps[69]
+BMS.BMS_Temperatures_8.Cell_T_70:   bms.cell_temps[70]
+BMS.BMS_Temperatures_8.Cell_T_71:   bms.cell_temps[71]
+# group 9
+BMS.BMS_Temperatures_9.Cell_T_72:   bms.cell_temps[72]
+BMS.BMS_Temperatures_9.Cell_T_73:   bms.cell_temps[73]
+BMS.BMS_Temperatures_9.Cell_T_74:   bms.cell_temps[74]
+BMS.BMS_Temperatures_9.Cell_T_75:   bms.cell_temps[75]
+BMS.BMS_Temperatures_9.Cell_T_76:   bms.cell_temps[76]
+BMS.BMS_Temperatures_9.Cell_T_77:   bms.cell_temps[77]
+BMS.BMS_Temperatures_9.Cell_T_78:   bms.cell_temps[78]
+BMS.BMS_Temperatures_9.Cell_T_79:   bms.cell_temps[79]
+
+# ——————————————————————————————————————————————
+# Cell voltages & OCV offsets (two packets)
+# Voltages packet 0
+BMS.BMS_Voltages_0.Cell_V_0:          bms.cell_voltages[0]
+BMS.BMS_Voltages_0.Cell_V_1:          bms.cell_voltages[1]
+BMS.BMS_Voltages_0.Cell_V_2:          bms.cell_voltages[2]
+BMS.BMS_Voltages_0.Cell_V_3:          bms.cell_voltages[3]
+BMS.BMS_Voltages_0.Cell_V_4:          bms.cell_voltages[4]
+BMS.BMS_Voltages_0.Cell_V_5:          bms.cell_voltages[5]
+BMS.BMS_Voltages_0.Cell_V_6:          bms.cell_voltages[6]
+BMS.BMS_Voltages_0.Cell_OCV_Offset_0: bms.cell_voltages[0]
+
+# Voltages packet 1
+BMS.BMS_Voltages_1.Cell_V_7:          bms.cell_voltages[7]
+BMS.BMS_Voltages_1.Cell_V_8:          bms.cell_voltages[8]
+BMS.BMS_Voltages_1.Cell_V_9:          bms.cell_voltages[9]
+BMS.BMS_Voltages_1.Cell_V_10:         bms.cell_voltages[10]
+BMS.BMS_Voltages_1.Cell_V_11:         bms.cell_voltages[11]
+BMS.BMS_Voltages_1.Cell_V_12:         bms.cell_voltages[12]
+BMS.BMS_Voltages_1.Cell_V_13:         bms.cell_voltages[13]
+BMS.BMS_Voltages_1.Cell_OCV_Offset_1: bms.cell_voltages[1]

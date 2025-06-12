@@ -21,13 +21,58 @@ from analysis.common.parsers.telem.telem import (
 )
 
 
+import yaml
+
 class DataMapper:
-    def map_snapshots(self, snapshot : List[Dict[str, str]]) -> CarDB:
+    def map_snapshots(self, snapshots: List[Dict[str, str]], db: CarDB) -> CarDB:
         pass
 
 
+class YamlDataMapper(DataMapper):
+    """
+    Maps generic telemetry snapshots (dicts) to CarDB records based on an external mapping file.
+    Mapping file format (YAML):
+      source_key: target_path
+    where target_path is a dotted path into CarDB attributes, with optional [i] for array indices.
+    """
+    def __init__(self, mapping_filename: str):
+        with open(mapping_filename, 'r') as mf:
+            self.mapping = yaml.safe_load(mf)
+
+    def map_snapshots(self, snapshots: List[Dict[str, str]], db: CarDB) -> CarDB:
+        for idx, snap in enumerate(snapshots):
+            row = db._db[idx]
+            for src, dst in self.mapping.items():
+                if src not in snap:
+                    continue
+                val = snap[src]
+                # parse dst path, e.g. 'bms.cell_temps[3]'
+                parts = dst.split('.')
+                obj = row
+                for part in parts[:-1]:
+                    if '[' in part:
+                        name, idx_str = part.rstrip(']').split('[')
+                        obj = getattr(obj, name)[int(idx_str)]
+                    else:
+                        obj = getattr(obj, part)
+                last = parts[-1]
+                if '[' in last:
+                    name, idx_str = last.rstrip(']').split('[')
+                    arr = getattr(obj, name)
+                    arr[int(idx_str)] = float(val)
+                else:
+                    # scalar assignment, convert to float if possible
+                    try:
+                        v = float(val)
+                    except ValueError:
+                        v = val
+                    setattr(obj, last, v)
+        return db
+
+
+
 class TelemDAQParserBase(BaseParser):
-    def _get_mapper(self) -> DataMapper:
+    def get_mapper(self) -> DataMapper:
         pass
 
 
@@ -106,6 +151,6 @@ class TelemDAQParserBase(BaseParser):
         return records
     
     def parse(self, filename: str) -> CarDB:
-        mapper = self._get_mapper()
+        mapper = self.get_mapper()
         snapshots = self._parse_log(filename)
         return mapper.map_snapshots(snapshots)
