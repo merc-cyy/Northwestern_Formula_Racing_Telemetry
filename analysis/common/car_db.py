@@ -277,6 +277,7 @@ car_snapshot_dtype = np.dtype(
 
 class CarDB:
     def __init__(self, n_snapshots: int):
+        print(f"Creating database with {n_snapshots} snapshots!")
         self._db = np.zeros(n_snapshots, dtype=car_snapshot_dtype)
 
     def __len__(self):
