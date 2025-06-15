@@ -351,12 +351,13 @@ class TelemDataParser:
         res = {}
         for b in self.config.boards:
             for m in b.messages:
+                # print(f"Parsing message {m.name} with ID {m.message_id} on board {b.name}, handle offset {m.buffer_offset}, size {m.message_size} bytes")
                 for s in m.signals:
                     h = TelemBitBufferHandle(
                         offset=m.buffer_offset + s.start_bit, size=s.length
                     )
+                    # print(f"Parsing signal {s.name} from message {m.name} on board {b.name} at handle {h}")
                     data = buffer.read(h)
-
                     bo = s.endianness
                     raw = int.from_bytes(data, byteorder=bo, signed=s.is_signed)
                     key = f"{b.name}.{m.name}.{s.name}"

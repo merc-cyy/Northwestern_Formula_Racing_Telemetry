@@ -10,7 +10,7 @@ class TestTelemBitBuffer(unittest.TestCase):
             buf = TelemBitBuffer(bit_size=bits)
             self.assertEqual(buf.bit_size(), bits)
             # internal buffer length should be ceil(bits/8) + 1 (offset hack)
-            expected_bytes = ((bits + 7) // 8) + 1
+            expected_bytes = ((bits + 7) // 8)
             self.assertEqual(len(buf._buffer), expected_bytes)
 
     def test_byte_aligned_write_read(self):

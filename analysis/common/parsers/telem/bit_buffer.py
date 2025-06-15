@@ -14,7 +14,7 @@ class TelemBitBuffer:
     """
     def __init__(self, bit_size: int, buffer: Optional[bytearray] = None):
         self._bit_size = bit_size
-        byte_count = (bit_size + 7) >> 3
+        byte_count = (bit_size + 7) // 8
         if buffer is not None:
             if len(buffer) < byte_count:
                 raise ValueError(
