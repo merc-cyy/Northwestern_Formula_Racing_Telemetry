@@ -194,7 +194,7 @@ bms_dtype = np.dtype(
         ("min_cell_temp", "f4"),
         ("max_cell_voltage", "f4"),
         ("min_cell_voltage", "f4"),
-        ("fault_summary", "i4"),
+        ("fault_summary", "?"),
         ("undervoltage_fault", "?"),
         ("overvoltage_fault", "?"),
         ("undertemperature_fault", "?"),

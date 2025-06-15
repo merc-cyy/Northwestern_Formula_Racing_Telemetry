@@ -328,6 +328,20 @@ class TelemDataParser:
                 off += 64
         self.total_bits = off
 
+    def _interp_physical_value(self, raw : int, signal: TelemSignalDescription):
+        if signal.data_type == "bool":
+            return bool(raw)
+        elif "float" in signal.data_type:
+            return float(raw * signal.factor + signal.offset)
+        elif "uint" in signal.data_type:
+            return int(raw * signal.factor + signal.offset)
+        elif "int" in signal.data_type:
+            return int(raw * signal.factor + signal.offset)
+        else:
+            # Unknown type, return raw value
+            print(f"Unknown data type '{signal.data_type}' for signal '{signal.name}', returning raw value")
+            return None
+
     def parse_snapshot(self, buffer) -> Dict[str, float]:
         res = {}
         for b in self.config.boards:
@@ -347,6 +361,9 @@ class TelemDataParser:
                     bo = s.endianness or "little"
                     raw = int.from_bytes(data, byteorder=bo, signed=signed)
                     key = f"{b.name}.{m.name}.{s.name}"
-                    # print(f"Parsing signal {key}: raw={raw}, factor={s.factor}, offset={s.offset}")
-                    res[key] = raw * s.factor + s.offset
+                    value = self._interp_physical_value(raw, s)
+                    if value is not None:
+                        res[key] = value
+                    else:
+                        res[key] = raw
         return res
