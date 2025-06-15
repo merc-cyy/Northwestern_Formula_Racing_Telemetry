@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Union
 from enum import Enum, auto
 from analysis.common.parsers.telem.bit_buffer import *
+from typing import Any
 
 
 # Token definitions
@@ -299,6 +300,8 @@ class TelemBuilder:
 
         # signedness
         nxt = self._tokenizer.peek()
+        # default to unsigned
+        sig.is_signed = False
         if nxt.type == TelemTokenType.TT_IDENTIFIER and nxt.data in (
             "signed",
             "unsigned",
@@ -308,6 +311,8 @@ class TelemBuilder:
 
         # endianness
         nxt = self._tokenizer.peek()
+        # default to little-endian
+        sig.endianness = "little"
         if nxt.type == TelemTokenType.TT_IDENTIFIER and nxt.data in ("little", "big"):
             sig.endianness = nxt.data
             self._tokenizer.next()
@@ -342,7 +347,7 @@ class TelemDataParser:
             print(f"Unknown data type '{signal.data_type}' for signal '{signal.name}', returning raw value")
             return None
 
-    def parse_snapshot(self, buffer) -> Dict[str, float]:
+    def parse_snapshot(self, buffer) -> Dict[str, Any]:
         res = {}
         for b in self.config.boards:
             for m in b.messages:
@@ -351,15 +356,9 @@ class TelemDataParser:
                         offset=m.buffer_offset + s.start_bit, size=s.length
                     )
                     data = buffer.read(h)
-                    if data is None:
-                        continue
-                    signed = (
-                        s.is_signed
-                        if s.is_signed is not None
-                        else s.data_type.startswith("int")
-                    )
-                    bo = s.endianness or "little"
-                    raw = int.from_bytes(data, byteorder=bo, signed=signed)
+
+                    bo = s.endianness
+                    raw = int.from_bytes(data, byteorder=bo, signed=s.is_signed)
                     key = f"{b.name}.{m.name}.{s.name}"
                     value = self._interp_physical_value(raw, s)
                     if value is not None:

@@ -5,6 +5,7 @@ import yaml
 from pprint import pprint
 import jinja2
 import builtins
+from typing import Any, Dict
 
 from analysis.common.parser_registry import ParserVersion, parser_class, BaseParser
 
@@ -26,7 +27,7 @@ from analysis.common.parsers.telem.telem import (
 
 
 class DataMapper:
-    def map_snapshots(self, snapshots: List[Dict[str, str]], db: CarDB) -> CarDB:
+    def map_snapshots(self, snapshots: List[Dict[str, Any]], db: CarDB) -> CarDB:
         pass
 
 
@@ -105,7 +106,7 @@ class YamlDataMapper(DataMapper):
         
 
 
-    def map_snapshots(self, snapshots: List[Dict[str, str]], db: CarDB) -> CarDB:
+    def map_snapshots(self, snapshots: List[Dict[str, Any]], db: CarDB) -> CarDB:
         """
         For each generic snapshot (dict of source_key->string_value), write values into the
         underlying numpy CarDB buffer according to self.mapping.
@@ -151,7 +152,7 @@ class TelemDAQParserBase(BaseParser):
         pass
 
 
-    def _parse_log(self, log_filename: str) -> List[Dict[str, str]]:
+    def _parse_log(self, log_filename: str) -> List[Dict[str, Any]]:
         """
         Parse a binary log produced by SDLogger, extracting the embedded telemetry
         config between the first board ('>') line and the last signal ('>>>') line,
@@ -206,7 +207,7 @@ class TelemDAQParserBase(BaseParser):
 
         print(f"Snapshot length: {record_len} (time : {8}, frame {rec_bytes})")
 
-        records: List[Dict[str, str]] = []
+        records: List[Dict[str, Any]] = []
         data_region = raw[end:]
         count = len(data_region) // record_len
         for i in range(count):
@@ -220,8 +221,11 @@ class TelemDAQParserBase(BaseParser):
             vals = parser.parse_snapshot(bitbuf)
 
             rec = {"time.time_since_startup": str(time_since), "time.unix_time": str(unix_time)}
-            rec.update({k: str(v) for k, v in vals.items()})
+            rec.update(vals)
             records.append(rec)
+            print(f"Parsed record {i + 1}/{count}")
+            pprint(rec)
+
 
         return records
     
