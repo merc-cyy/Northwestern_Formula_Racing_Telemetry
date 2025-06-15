@@ -141,6 +141,7 @@ class CarSnapshot:
 time_dtype = np.dtype(
     [
         ("time_since_startup", "u4"),
+        ("unix_time", "u4"),
         ("hour", "u1"),
         ("minute", "u1"),
         ("second", "u1"),

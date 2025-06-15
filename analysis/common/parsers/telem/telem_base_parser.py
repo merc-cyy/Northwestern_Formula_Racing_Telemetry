@@ -68,24 +68,41 @@ class YamlDataMapper(DataMapper):
         Set a value in the CarDB row based on a dotted path.
         The path can include array indices (e.g., 'board.message.signal[0]').
         """
-        return
         parts = path.split('.')
-        current = row
-        for part in parts[:-1]:
+        # split any that are array indices into numbers
+        for i, part in enumerate(parts):
             if '[' in part and ']' in part:
-                # Handle array index
-                base, index = part[:-1].split('[')
-                index = int(index)
-                current = current[base][index]
-            else:
-                current = current[part]
-        # Set the final value
-        # if there is no field in the row, ignore it
-        if parts[-1] not in current:
-            print(f"Warning: Field '{parts[-1]}' not found in row, skipping set operation.")
-            return
+                # split on the brackets
+                base, index = part.split('[')
+                index = int(index[:-1])
 
-        current[parts[-1]] = value
+                parts[i] = (base, index)
+            else:
+                parts[i] = (part, None)
+
+        pprint(parts)
+
+        # Traverse the row to set the value
+        current = row
+        for i, (part, index) in enumerate(parts):
+            if i == len(parts) - 1:
+                # Last part, set the value
+                if index is not None:
+                    # If it's an indexed part, set the value at that index
+                    current[index] = value
+                else:
+                    # Otherwise, set the value directly
+                    current[part] = value
+            else:
+                # Not the last part, traverse deeper
+                if index is not None:
+                    # If it's an indexed part, get the array at that index
+                    current = current[part][index]
+                else:
+                    # Otherwise, just get the next level
+                    current = current[part]
+
+        
 
 
     def map_snapshots(self, snapshots: List[Dict[str, str]], db: CarDB) -> CarDB:
@@ -98,7 +115,7 @@ class YamlDataMapper(DataMapper):
             row = db._db[idx]
 
             for src_key, value in snap.items():
-                print(f"Processing snapshot {idx}, key: {src_key}, value: {value}")
+
                 parts = src_key.split('.')
                 if len(parts) < 3:
                     # if this is a single part key, then just use that to set the value in the cardb row
