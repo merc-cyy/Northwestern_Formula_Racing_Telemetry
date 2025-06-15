@@ -347,19 +347,45 @@ class TelemDataParser:
             print(f"Unknown data type '{signal.data_type}' for signal '{signal.name}', returning raw value")
             return None
 
-    def parse_snapshot(self, buffer) -> Dict[str, Any]:
+    def parse_snapshot(self, buffer : TelemBitBuffer) -> Dict[str, Any]:
         res = {}
         for b in self.config.boards:
             for m in b.messages:
                 # print(f"Parsing message {m.name} with ID {m.message_id} on board {b.name}, handle offset {m.buffer_offset}, size {m.message_size} bytes")
                 for s in m.signals:
-                    h = TelemBitBufferHandle(
-                        offset=m.buffer_offset + s.start_bit, size=s.length
+                    message_handle = TelemBitBufferHandle(
+                        offset=m.buffer_offset, size=64
                     )
                     # print(f"Parsing signal {s.name} from message {m.name} on board {b.name} at handle {h}")
-                    data = buffer.read(h)
+                    data = buffer.read(message_handle)
                     bo = s.endianness
+
+                    # create a new 64 bit buffer for the message
+                    if data is None:
+                        print(f"Failed to read data for signal {s.name} in message {m.name} on board {b.name}")
+                        continue
+
+                    if len(data) < 8:
+                        print(f"Data for signal {s.name} in message {m.name} on board {b.name} is too short: {len(data)} bytes, expected 8 bytes")
+                        continue
+
+                    message_buffer = TelemBitBuffer(bit_size=64, buffer=bytearray(data))
+                    # read the signal data from the message buffer
+                    signal_handle = TelemBitBufferHandle(
+                        offset=s.start_bit, size=s.length
+                    )
+
+                    data = message_buffer.read(signal_handle)
+                    if data is None:
+                        print(f"Failed to read signal {s.name} in message {m.name} on board {b.name}")
+                        continue
+
                     raw = int.from_bytes(data, byteorder=bo, signed=s.is_signed)
+
+                    # only grab the length bits of the signal
+                    raw &= (1 << s.length) - 1
+                    # print(f"Raw value for signal {s.name} in message {m.name} on board {b.name}: {raw}")
+
                     key = f"{b.name}.{m.name}.{s.name}"
                     value = self._interp_physical_value(raw, s)
                     if value is not None:

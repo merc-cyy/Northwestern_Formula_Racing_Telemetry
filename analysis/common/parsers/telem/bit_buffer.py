@@ -51,6 +51,7 @@ class TelemBitBuffer:
         Read bits as bytes from the buffer. Returns bytes object of length ceil(size/8), or None if out of range.
         """
         if handle.offset + handle.size > self._bit_size or handle.size == 0:
+            print("Read out of range or zero size handle.")
             return None
 
         total_bits = handle.size

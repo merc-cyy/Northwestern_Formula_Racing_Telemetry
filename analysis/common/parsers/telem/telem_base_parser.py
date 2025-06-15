@@ -64,46 +64,27 @@ class YamlDataMapper(DataMapper):
         # pprint("Loaded mapping:")
         # pprint(self.mapping)
 
-    def _set_value(self, row: np.ndarray, path: str, value: str):
-        """
-        Set a value in the CarDB row based on a dotted path.
-        The path can include array indices (e.g., 'board.message.signal[0]').
-        """
-        parts = path.split('.')
-        # split any that are array indices into numbers
-        for i, part in enumerate(parts):
-            if '[' in part and ']' in part:
-                # split on the brackets
-                base, index = part.split('[')
-                index = int(index[:-1])
-
-                parts[i] = (base, index)
+    def _set_value(self, row: np.ndarray, path: str, value: Any):
+        # split into (name,idx) tuples
+        parts = []
+        for segment in path.split('.'):
+            if '[' in segment:
+                base, idx = segment[:-1].split('[')
+                parts.append((base, int(idx)))
             else:
-                parts[i] = (part, None)
+                parts.append((segment, None))
 
-        pprint(parts)
-
-        # Traverse the row to set the value
+        # drill into everything but the last part
         current = row
-        for i, (part, index) in enumerate(parts):
-            if i == len(parts) - 1:
-                # Last part, set the value
-                if index is not None:
-                    # If it's an indexed part, set the value at that index
-                    current[index] = value
-                else:
-                    # Otherwise, set the value directly
-                    current[part] = value
-            else:
-                # Not the last part, traverse deeper
-                if index is not None:
-                    # If it's an indexed part, get the array at that index
-                    current = current[part][index]
-                else:
-                    # Otherwise, just get the next level
-                    current = current[part]
+        for name, idx in parts[:-1]:
+            current = current[name] if idx is None else current[name][idx]
 
-        
+        # now assign to the final field
+        last_name, last_idx = parts[-1]
+        if last_idx is None:
+            current[last_name] = value
+        else:
+            current[last_name][last_idx] = value
 
 
     def map_snapshots(self, snapshots: List[Dict[str, Any]], db: CarDB) -> CarDB:
@@ -114,6 +95,9 @@ class YamlDataMapper(DataMapper):
         print("Mapping telemetry snapshots to CarDB.")
         for idx, snap in enumerate(snapshots):
             row = db._db[idx]
+
+            if idx % 100 == 0:
+                print(f"Processing record {idx + 1}/{len(snapshots)}")
 
             for src_key, value in snap.items():
 
@@ -131,18 +115,20 @@ class YamlDataMapper(DataMapper):
                 signal_mapping = message_mapping.get(signal, None)
                 if signal_mapping is None:
                     # If no mapping exists, skip this signal
-                    print(f"Skipping unmapped signal: {src_key}")
+                    # print(f"Skipping unmapped signal: {src_key}")
                     continue
 
                 if signal_mapping == '???':
                     # If the mapping is '???', skip this signal
-                    print(f"Skipping signal with '???' mapping: {src_key}")
+                    # print(f"Skipping signal with '???' mapping: {src_key}")
                     continue
 
-                print(f"Mapping {src_key} to {signal_mapping} with value {value}")
+                # print(f"Mapping {src_key} to {signal_mapping} with value {value}")
         
                 # now use the signal_mapping to use that attribute in the CarDB
                 self._set_value(row, signal_mapping, value)
+
+        return db
 
 
 
@@ -193,7 +179,9 @@ class TelemDAQParserBase(BaseParser):
 
         # Extract and decode config
         cfg_bytes = raw[start:end]
+        print(f"Num config bytes: {len(cfg_bytes)}")
         cfg_text = cfg_bytes.decode("utf-8")
+        # print(cfg_text)
 
         # Build telemetry schema
         rdr = TelemTokenReader(cfg_text)
@@ -208,8 +196,18 @@ class TelemDAQParserBase(BaseParser):
         print(f"Snapshot length: {record_len} (time : {8}, frame {rec_bytes})")
 
         records: List[Dict[str, Any]] = []
+        # weird, but offset by 4 bytes
+        end += 4
+
         data_region = raw[end:]
+
+        # the data region must be a multiple of record_len
+        if len(data_region) % record_len != 0:
+            print(f"Data region length is not a multiple of record length: {len(data_region)} % {record_len} == {len(data_region) % record_len}")
+
         count = len(data_region) // record_len
+        print(f"Found {count} records in data region of length {len(data_region)}")
+
         for i in range(count):
             off = i * record_len
             block = data_region[off : off + record_len]
@@ -223,8 +221,7 @@ class TelemDAQParserBase(BaseParser):
             rec = {"time.time_since_startup": str(time_since), "time.unix_time": str(unix_time)}
             rec.update(vals)
             records.append(rec)
-            print(f"Parsed record {i + 1}/{count}")
-            pprint(rec)
+            # pprint(rec)
 
 
         return records
