@@ -346,5 +346,7 @@ class TelemDataParser:
                     )
                     bo = s.endianness or "little"
                     raw = int.from_bytes(data, byteorder=bo, signed=signed)
-                    res[f"{b.name}.{m.name}.{s.name}"] = raw * s.factor + s.offset
+                    key = f"{b.name}.{m.name}.{s.name}"
+                    # print(f"Parsing signal {key}: raw={raw}, factor={s.factor}, offset={s.offset}")
+                    res[key] = raw * s.factor + s.offset
         return res

@@ -42,6 +42,7 @@ class YamlDataMapper(DataMapper):
     """
     def __init__(self, mapping_filename: str):
         # Load and render Jinja2 template
+        print(f"Loading mapping file: {mapping_filename}")
         with open(mapping_filename, 'r') as mf:
             content = mf.read()
 
@@ -59,47 +60,71 @@ class YamlDataMapper(DataMapper):
         # Parse final YAML mapping (flat dict: src_key -> dest_path)
         self.mapping: Dict[str, str] = yaml.safe_load(rendered)
 
+        # pprint("Loaded mapping:")
+        # pprint(self.mapping)
+
+    def _set_value(self, row: np.ndarray, path: str, value: str):
+        """
+        Set a value in the CarDB row based on a dotted path.
+        The path can include array indices (e.g., 'board.message.signal[0]').
+        """
+        return
+        parts = path.split('.')
+        current = row
+        for part in parts[:-1]:
+            if '[' in part and ']' in part:
+                # Handle array index
+                base, index = part[:-1].split('[')
+                index = int(index)
+                current = current[base][index]
+            else:
+                current = current[part]
+        # Set the final value
+        # if there is no field in the row, ignore it
+        if parts[-1] not in current:
+            print(f"Warning: Field '{parts[-1]}' not found in row, skipping set operation.")
+            return
+
+        current[parts[-1]] = value
+
+
     def map_snapshots(self, snapshots: List[Dict[str, str]], db: CarDB) -> CarDB:
         """
         For each generic snapshot (dict of source_key->string_value), write values into the
         underlying numpy CarDB buffer according to self.mapping.
         """
+        print("Mapping telemetry snapshots to CarDB.")
         for idx, snap in enumerate(snapshots):
             row = db._db[idx]
-            for src_key, dest_path in self.mapping.items():
-                # skip unmapped entries
-                if dest_path == '???':
+
+            for src_key, value in snap.items():
+                print(f"Processing snapshot {idx}, key: {src_key}, value: {value}")
+                parts = src_key.split('.')
+                if len(parts) < 3:
+                    # if this is a single part key, then just use that to set the value in the cardb row
+                    self._set_value(row, src_key, value)
                     continue
-                # missing source: skip
-                if src_key not in snap:
+
+                # Construct target path from mapping
+                # check if the index [board][message][signal] exists in the mapping
+                board, message, signal = parts[0], parts[1], parts[2]
+                board_mapping = self.mapping.get(board, {})
+                message_mapping = board_mapping.get(message, {})
+                signal_mapping = message_mapping.get(signal, None)
+                if signal_mapping is None:
+                    # If no mapping exists, skip this signal
+                    print(f"Skipping unmapped signal: {src_key}")
                     continue
-                raw_val = snap[src_key]
-                # Try to convert literal values (numbers, bools, lists)
-                try:
-                    val = ast.literal_eval(raw_val)
-                except Exception:
-                    val = raw_val
-                # Navigate to parent of target attribute
-                parts = dest_path.split('.')
-                parent = row
-                for part in parts[:-1]:
-                    m = re.match(r"(\w+)(?:\[(\d+)\])?", part)
-                    name = m.group(1)
-                    idx_s = m.group(2)
-                    # drill into struct or array
-                    parent = parent[name]
-                    if idx_s is not None:
-                        parent = parent[int(idx_s)]
-                # Assign to final field or array slot
-                last = parts[-1]
-                m = re.match(r"(\w+)(?:\[(\d+)\])?", last)
-                name = m.group(1)
-                idx_s = m.group(2)
-                if idx_s is not None:
-                    parent[name][int(idx_s)] = val
-                else:
-                    parent[name] = val
-        return db
+
+                if signal_mapping == '???':
+                    # If the mapping is '???', skip this signal
+                    print(f"Skipping signal with '???' mapping: {src_key}")
+                    continue
+
+                print(f"Mapping {src_key} to {signal_mapping} with value {value}")
+        
+                # now use the signal_mapping to use that attribute in the CarDB
+                self._set_value(row, signal_mapping, value)
 
 
 
@@ -162,6 +187,8 @@ class TelemDAQParserBase(BaseParser):
         rec_bytes = (parser.total_bits + 7) // 8
         record_len = 4 + 4 + rec_bytes  # uptime + unix + snapshot
 
+        print(f"Snapshot length: {record_len} (time : {8}, frame {rec_bytes})")
+
         records: List[Dict[str, str]] = []
         data_region = raw[end:]
         count = len(data_region) // record_len
@@ -175,7 +202,7 @@ class TelemDAQParserBase(BaseParser):
             bitbuf = TelemBitBuffer(bit_size=parser.total_bits, buffer=bytearray(buf_bytes))
             vals = parser.parse_snapshot(bitbuf)
 
-            rec = {"time_since_startup": str(time_since), "unix_time": str(unix_time)}
+            rec = {"time.time_since_startup": str(time_since), "time.unix_time": str(unix_time)}
             rec.update({k: str(v) for k, v in vals.items()})
             records.append(rec)
 
