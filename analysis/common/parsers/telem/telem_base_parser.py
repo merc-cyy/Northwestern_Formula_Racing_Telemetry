@@ -221,6 +221,9 @@ class TelemDAQParserBase(BaseParser):
             rec = {"time.time_since_startup": str(time_since), "time.unix_time": str(unix_time)}
             rec.update(vals)
             records.append(rec)
+
+            if i % 100 == 0:
+                print(f"Parsed record {i + 1}/{count}")
             # pprint(rec)
 
 

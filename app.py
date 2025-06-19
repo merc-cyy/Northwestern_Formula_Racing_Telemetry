@@ -115,20 +115,32 @@ def main():
     # uploaded_files = st.sidebar.file_uploader("Select the drive day", type=["csv", "xlsx"], accept_multiple_files=True)
     uploaded_files = None
 
+    select_log_system = None
     select_day = None
     select_csv = None 
 
     #Selecting the Drive Day
     DATA_DIR = 'out'#hardcoded for now
-    day_folders = []#list of driveday folder paths
+    log_systems = []#list of log systems
     for folder in os.listdir(DATA_DIR):
-        if os.path.isdir(os.path.join(DATA_DIR,folder)):#if its a folder
+        if os.path.isdir(os.path.join(DATA_DIR,folder)):
+            log_systems.append(folder)
+    log_systems = sorted(log_systems)#sort the folders for easy select
+
+    select_log_system = st.sidebar.selectbox('Select the Log System', log_systems, key='selected_log_system')
+
+    if select_log_system:
+        folder_path = os.path.join(DATA_DIR, select_log_system)#path to the selected folder
+
+    day_folders = [] #list of driveday folder paths
+    for folder in os.listdir(folder_path):
+        if os.path.isdir(os.path.join(folder_path,folder)):#if its a folder
             day_folders.append(folder)
     day_folders = sorted(day_folders)#sort the folders for easy select
     select_day = st.sidebar.selectbox('Select the Drive Day', day_folders, key='selected_day')
     #Selecting the Files
     if select_day:
-        folder_path = os.path.join(DATA_DIR, select_day)#path to the selected folder
+        folder_path = os.path.join(folder_path, select_day)#path to the selected folder
         csv_files = []#list of csv files for that day
         for file in os.listdir(folder_path):
             if file.endswith(".csv"):
