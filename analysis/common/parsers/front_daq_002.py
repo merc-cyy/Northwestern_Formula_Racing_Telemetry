@@ -98,13 +98,18 @@ class FullDAQParser(BaseParser):
         i += 25
 
         # We only store the ones your CarDB cares about:
-        dest["bms"]["battery_voltage"] = lvV
+        dest["bms"]["battery_voltage"] = hvV
         dest["bms"]["battery_temp"] = batT
         dest["bms"]["max_cell_voltage"] = maxCV
         dest["bms"]["min_cell_voltage"] = minCV
         dest["bms"]["max_cell_temp"] = maxCT
         dest["bms"]["min_cell_temp"] = minCT
         dest["bms"]["soc"] = soc
+        dest["bms"]["max_discharge_current"] = maxD
+        dest["bms"]["max_regen_current"] = maxR
+        
+        dest["pdm"]["bat_voltage"] = lvV
+
 
         # ── SECTION 6: Corner data (4 corners × (speed, displacement, strain)) ────
         for idx, (wsp, wdp, pr) in enumerate(
@@ -138,7 +143,14 @@ class FullDAQParser(BaseParser):
         dest["inverter"]["motor_current"] = motI
         dest["inverter"]["dc_voltage"] = dcV
         dest["inverter"]["dc_current"] = dcI
-        # (we don’t store brake/app values in CarDB)
+        dest["inverter"]["igbt_temp"] = igbtT
+        dest["inverter"]["motor_temp"] = motT
+
+
+        dest["ecu"]["apps1_throttle"] = apps1
+        dest["ecu"]["apps2_throttle"] = apps2
+        dest["ecu"]["front_brake_pressure"] = fBP
+        dest["ecu"]["rear_brake_pressure"] = rBP        
 
         # ── SECTION 9: ECU state bytes (5×uint8) ────────────────────────────────────
         (driveSt, bmsSt, imdSt, invSt, bmsCmd) = vals[i : i + 5]

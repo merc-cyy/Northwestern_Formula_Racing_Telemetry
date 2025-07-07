@@ -261,6 +261,8 @@ ecu_dtype = np.dtype(
         ("apps1_throttle", "f4"),
         ("apps2_throttle", "f4"),
         ("torque_status", "i4"),
+        ("front_brake_pressure", "f4"),
+        ("rear_brake_pressure", "f4"),
     ]
 )
 
