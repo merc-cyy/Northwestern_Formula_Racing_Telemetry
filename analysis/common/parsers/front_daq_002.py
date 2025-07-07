@@ -177,10 +177,12 @@ class FullDAQParser(BaseParser):
         # ── SECTION 13: pump/fan duty, aero, LUT id, resets, temp‐limit, torque ───
         dest["ecu"]["pump_duty_cycle"] = vals[i]
         i += 1
+        i += 1  # 1-byte pad before fan duty cycle
         dest["ecu"]["fan_duty_cycle"] = vals[i]
         i += 1
         dest["ecu"]["active_aero_state"] = bool(vals[i])
         i += 1
+        i += 1  # 1-byte pad before active aero position
         dest["ecu"]["active_aero_position"] = vals[i]
         i += 1
         dest["ecu"]["accel_lut_id_response"] = int(vals[i])
@@ -262,7 +264,7 @@ class FullDAQParser(BaseParser):
         i += 2
 
         # skip the statuses
-        i += 23
+        i += 26
 
 
         # ── SECTION 25: pad (2 bytes) before steering_angle ─────────────────────────
@@ -278,9 +280,11 @@ class FullDAQParser(BaseParser):
         i += NUM_TEMP_CELLS
         dest["bms"]["cell_voltages"][:] = vals[i : i + NUM_VOLT_CELLS]
         i += NUM_VOLT_CELLS   
-        
-        # stored it again, whoopsies
+
+        # we stored the cell temps and voltages again...
+        # skip it again
         i += NUM_TEMP_CELLS + NUM_VOLT_CELLS
+    
 
         # ── FINAL CHECK ──────────────────────────────────────────────────────────────
         if i != len(vals):
