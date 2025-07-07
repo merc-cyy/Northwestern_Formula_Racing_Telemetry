@@ -67,9 +67,6 @@ class FullDAQParser(BaseParser):
         dest["ecu"]["implausibilities"] = vals[i : i + ECU_FAULT_COUNT]
         i += ECU_FAULT_COUNT
 
-        # ── SECTION 4: 3-byte padding to align next float ────────────────────────────
-        i += 3
-
         # ── SECTION 5: BMS “summary” floats (25 floats: hvVoltage…pumpAmps) ──────────
         (
             hvV,
@@ -161,8 +158,6 @@ class FullDAQParser(BaseParser):
         dest["pdm"]["pump_efuse_triggered"] = bool(vals[i])
         i += 1
 
-        # ── SECTION 11: 1-byte padding before 32-bit Ah/Wh counters ────────────────
-        i += 1
 
         # ── SECTION 12: 4×uint32 + 2×int32 (Ah/Wh drawn/charged, set currents) ────
         (ahDrawn, ahChgd, whDrawn, whChgd, setC, setCB) = vals[i : i + 6]
@@ -177,12 +172,10 @@ class FullDAQParser(BaseParser):
         # ── SECTION 13: pump/fan duty, aero, LUT id, resets, temp‐limit, torque ───
         dest["ecu"]["pump_duty_cycle"] = vals[i]
         i += 1
-        i += 1  # 1-byte pad before fan duty cycle
         dest["ecu"]["fan_duty_cycle"] = vals[i]
         i += 1
         dest["ecu"]["active_aero_state"] = bool(vals[i])
         i += 1
-        i += 1  # 1-byte pad before active aero position
         dest["ecu"]["active_aero_position"] = vals[i]
         i += 1
         dest["ecu"]["accel_lut_id_response"] = int(vals[i])
@@ -200,8 +193,6 @@ class FullDAQParser(BaseParser):
         dest["ecu"]["torque_status"] = int(vals[i])
         i += 1
 
-        # ── SECTION 14: 1-byte pad before the 8×flo/fli/fro/fri/blo/bli/bro/bri floats ─
-        i += 1
 
         # ── SECTION 15: 32 temperature readings (flo0…fri7) ─────────────────────────
         temps_32 = vals[i : i + 32]
@@ -222,20 +213,25 @@ class FullDAQParser(BaseParser):
             ("corners", 0, "wheel_displacement"),
             ("corners", 0, "pr_strain"),
             ("corners", 1, "wheel_speed"),
-            # … etc. repeat for corners 1,2,3 …
+            ("corners", 1, "wheel_displacement"),
+            ("corners", 1, "pr_strain"),
+            ("corners", 2, "wheel_speed"),
+            ("corners", 2, "wheel_displacement"),
+            ("corners", 2, "pr_strain"),
+            ("corners", 3, "wheel_speed"),
+            ("corners", 3, "wheel_displacement"),
+            ("corners", 3, "pr_strain"),
         ]
         for (blk, idx, key), v in zip(keys, corners_12):
             dest[blk][idx][key] = v
 
         # ── SECTION 17: File & LUT metadata (4×uint8 + …) ──────────────────────────
-        # # (we don’t store this in CarDB, so we skip it)
-        # (4×uint8 + 1 bool + 1×pad + 1×int16 + 1×uint8 + 2×bool)
         i += 4
 
 
         # # ── SECTION 18: 30 × (int16 x_n, float y_n) ───────────────────────────────
         # # (we don’t store this in CarDB, so we skip it)
-        i += 30 * 4 # int16, two pads, float
+        i += 30 * 2 # int16, two pads, float
 
         # ── SECTION 19: 3 floats: acceleration & angular speed ─────────────────────────────────────
         dest["dynamics"]["imu"]["accel"] = vals[i : i + 3]
@@ -264,16 +260,11 @@ class FullDAQParser(BaseParser):
         i += 2
 
         # skip the statuses
-        i += 26
-
-
-        # ── SECTION 25: pad (2 bytes) before steering_angle ─────────────────────────
-        i += 2
+        i += 22
 
         # ── SECTION 26: steering_angle & then the 80+140 BMS arrays ────────────────
         dest["dynamics"]["steering_angle"] = vals[i]
         i += 1
-
 
         # store cell temperatures and voltages
         dest["bms"]["cell_temps"][:] = vals[i : i + NUM_TEMP_CELLS]
