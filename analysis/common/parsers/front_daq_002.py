@@ -36,30 +36,51 @@ LINE_SIZE = struct.calcsize(LINE_FMT)
 @parser_class(ParserVersion("NFR25", 0, 0, 2))
 class FullDAQParser(BaseParser):
     def _decode_record(self, raw: memoryview, dest: np.void) -> None:
+        # Unpack everything in one shot
         vals = struct.unpack_from(LINE_FMT, raw)
         i = 0
 
-        # ── 1) timestamp ─────────────────────────────────────────────────────────
+        # ── SECTION 1: Timestamp ─────────────────────────────────────────────────────
         dest["time"]["time_since_startup"] = vals[i]
         i += 1
+        # (We don’t store hour/min/sec/millis from the struct here.)
 
-        # ── 2) bmsFaults + ecu implausibilities ────────────────────────────────
-        dest["bms"]["fault_summary":] = vals[i : i + BMS_FAULT_COUNT]  # all 8
-        i += BMS_FAULT_COUNT
-        dest["ecu"]["implausibilities"][:] = vals[i : i + ECU_FAULT_COUNT]
+        # ── SECTION 2: BMS faults (8 bools) ─────────────────────────────────────────
+        dest["bms"]["fault_summary"] = int(vals[i])
+        i += 1
+        dest["bms"]["undervoltage_fault"] = bool(vals[i])
+        i += 1
+        dest["bms"]["overvoltage_fault"] = bool(vals[i])
+        i += 1
+        dest["bms"]["undertemperature_fault"] = bool(vals[i])
+        i += 1
+        dest["bms"]["overtemperature_fault"] = bool(vals[i])
+        i += 1
+        dest["bms"]["overcurrent_fault"] = bool(vals[i])
+        i += 1
+        dest["bms"]["external_kill_fault"] = bool(vals[i])
+        i += 1
+        dest["bms"]["open_wire_fault"] = bool(vals[i])
+        i += 1
+
+        # ── SECTION 3: ECU implausibility flags (5 bools) ────────────────────────────
+        dest["ecu"]["implausibilities"] = vals[i : i + ECU_FAULT_COUNT]
         i += ECU_FAULT_COUNT
 
-        # ── 3) 25 floats: hvVoltage … pumpAmps ────────────────────────────────
+        # ── SECTION 4: 3-byte padding to align next float ────────────────────────────
+        i += 3
+
+        # ── SECTION 5: BMS “summary” floats (25 floats: hvVoltage…pumpAmps) ──────────
         (
-            hv,
-            lv,
+            hvV,
+            lvV,
             batT,
-            maxCellT,
-            minCellT,
-            maxCellV,
-            minCellV,
-            maxDis,
-            maxReg,
+            maxCT,
+            minCT,
+            maxCV,
+            minCV,
+            maxD,
+            maxR,
             soc,
             ws0,
             ws1,
@@ -73,24 +94,22 @@ class FullDAQParser(BaseParser):
             ps1,
             ps2,
             ps3,
-            genAmps,
-            fanAmps,
-            pumpAmps,
+            genA,
+            fanA,
+            pumpA,
         ) = vals[i : i + 25]
         i += 25
 
-        # map into CarDB
-        dest["bms"]["max_discharge_current"] = maxDis
-        dest["bms"]["max_regen_current"] = maxReg
+        # We only store the ones your CarDB cares about:
+        dest["bms"]["battery_voltage"] = lvV
         dest["bms"]["battery_temp"] = batT
-        dest["bms"]["battery_voltage"] = lv
+        dest["bms"]["max_cell_voltage"] = maxCV
+        dest["bms"]["min_cell_voltage"] = minCV
+        dest["bms"]["max_cell_temp"] = maxCT
+        dest["bms"]["min_cell_temp"] = minCT
         dest["bms"]["soc"] = soc
-        dest["bms"]["max_cell_temp"] = maxCellT
-        dest["bms"]["min_cell_temp"] = minCellT
-        dest["bms"]["max_cell_voltage"] = maxCellV
-        dest["bms"]["min_cell_voltage"] = minCellV
 
-        # ── 4) corners from wheelSpeeds, wheelDisplacement, prStrain ─────────
+        # ── SECTION 6: Corner data (4 corners × (speed, displacement, strain)) ────
         for idx, (wsp, wdp, pr) in enumerate(
             zip((ws0, ws1, ws2, ws3), (wd0, wd1, wd2, wd3), (ps0, ps1, ps2, ps3))
         ):
@@ -98,98 +117,174 @@ class FullDAQParser(BaseParser):
             dest["corners"][idx]["wheel_displacement"] = wdp
             dest["corners"][idx]["pr_strain"] = pr
 
-        # ── 5) PDM amps ─────────────────────────────────────────────────────────
-        dest["pdm"]["gen_amps"] = genAmps
-        dest["pdm"]["fan_amps"] = fanAmps
-        dest["pdm"]["pump_amps"] = pumpAmps
+        # ── SECTION 7: PDM amps ──────────────────────────────────────────────────────
+        dest["pdm"]["gen_amps"] = genA
+        dest["pdm"]["fan_amps"] = fanA
+        dest["pdm"]["pump_amps"] = pumpA
 
-        # ── 6) next 11 values: bmsFaultsRaw + motor…temps ─────────────────────
-        #   (_, rpm, motI, dcV, dcI, fBP, rBP, app1, app2, igbtT, motT)
-        _, rpm, motI, dcV, dcI, *_tail = vals[i : i + 11]
+        # ── SECTION 8: uint16/int16 heart of inverter & apps/brakes (11 values) ───
+        (
+            rawFaults,  # uint16
+            rpm,
+            motI,
+            dcV,
+            dcI,  # int16
+            fBP,
+            rBP,
+            apps1,
+            apps2,  # int16
+            igbtT,
+            motT,  # uint16
+        ) = vals[i : i + 11]
         i += 11
         dest["inverter"]["rpm"] = rpm
         dest["inverter"]["motor_current"] = motI
         dest["inverter"]["dc_voltage"] = dcV
         dest["inverter"]["dc_current"] = dcI
-        # note: we ignore frontBrake... and apps here; CarDB doesn't store them
+        # (we don’t store brake/app values in CarDB)
 
-        # ── 7) 5×uint8: driveState, bmsState, imdState, invStatus, bmsCommand ─
-        driveState, bmsState, imdState, _invSt, _bCmd = vals[i : i + 5]
+        # ── SECTION 9: ECU state bytes (5×uint8) ────────────────────────────────────
+        (driveSt, bmsSt, imdSt, invSt, bmsCmd) = vals[i : i + 5]
         i += 5
-        dest["ecu"]["drive_state"] = driveState
-        dest["bms"]["bms_state"] = bmsState
-        dest["bms"]["imd_state"] = imdState
+        dest["ecu"]["drive_state"] = int(driveSt)
+        dest["bms"]["bms_state"] = int(bmsSt)
+        dest["bms"]["imd_state"] = int(imdSt)
+        dest["ecu"]["bms_command"] = int(bmsCmd)
 
-        # ── 8) 2×bool: brakePressed, lvVoltageWarning ────────────────────────
-        brake, lvWarn = vals[i : i + 2]
-        i += 2
-        dest["ecu"]["brake_pressed"] = bool(brake)
-        dest["pdm"]["bat_voltage_warning"] = bool(lvWarn)
+        # ── SECTION 10: 4×bool: brakePressed, lvVoltageWarning, pdmEfuses ──────────
+        dest["ecu"]["brake_pressed"] = bool(vals[i])
+        i += 1
+        dest["pdm"]["bat_voltage_warning"] = bool(vals[i])
+        i += 1
+        dest["pdm"]["gen_efuse_triggered"] = bool(vals[i])
+        i += 1
+        dest["pdm"]["pump_efuse_triggered"] = bool(vals[i])
+        i += 1
 
-        # ── 9) 2×bool: pdm efuse triggers ─────────────────────────────────────
-        genEf, acEf = vals[i : i + 2]
-        i += 2
-        dest["pdm"]["gen_efuse_triggered"] = bool(genEf)
-        dest["pdm"]["fan_efuse_triggered"] = False  # not in DriveBusData
-        dest["pdm"]["pump_efuse_triggered"] = False  # ditto
+        # ── SECTION 11: 1-byte padding before 32-bit Ah/Wh counters ────────────────
+        i += 1
 
-        # ── 10) 4×uint32 & 2×int32: Ah/Wh drawn/charged + set currents ───────
-        ahDrawn, ahChg, whDrawn, whChg, setC, setCB = vals[i : i + 6]
+        # ── SECTION 12: 4×uint32 + 2×int32 (Ah/Wh drawn/charged, set currents) ────
+        (ahDrawn, ahChgd, whDrawn, whChgd, setC, setCB) = vals[i : i + 6]
         i += 6
         dest["inverter"]["ah_drawn"] = ahDrawn
-        dest["inverter"]["ah_charged"] = ahChg
+        dest["inverter"]["ah_charged"] = ahChgd
         dest["inverter"]["wh_drawn"] = whDrawn
-        dest["inverter"]["wh_charged"] = whChg
+        dest["inverter"]["wh_charged"] = whChgd
         dest["ecu"]["set_current"] = setC
         dest["ecu"]["set_current_brake"] = setCB
 
-        # ── 11) pump/fan duty, aero, LUT resp, reset efuse, temp-limit, torque ─
-        pumpDuty, fanDuty = vals[i : i + 2]
-        i += 2
-        aeroSt, aeroPos = vals[i : i + 2]
-        i += 2
-        lutID = vals[i]
+        # ── SECTION 13: pump/fan duty, aero, LUT id, resets, temp‐limit, torque ───
+        dest["ecu"]["pump_duty_cycle"] = vals[i]
         i += 1
-        rGen, rAC = vals[i : i + 2]
-        i += 2
-        il, bl, ml = vals[i : i + 3]
+        dest["ecu"]["fan_duty_cycle"] = vals[i]
+        i += 1
+        dest["ecu"]["active_aero_state"] = bool(vals[i])
+        i += 1
+        dest["ecu"]["active_aero_position"] = vals[i]
+        i += 1
+        dest["ecu"]["accel_lut_id_response"] = int(vals[i])
+        i += 1
+        dest["pdm"]["reset_gen_efuse"] = bool(vals[i])
+        i += 1
+        dest["pdm"]["reset_ac_efuse"] = bool(vals[i])
+        i += 1
+        dest["ecu"]["igbt_temp_limiting"] = bool(vals[i])
+        i += 1
+        dest["ecu"]["battery_temp_limiting"] = bool(vals[i])
+        i += 1
+        dest["ecu"]["motor_temp_limiting"] = bool(vals[i])
+        i += 1
+        dest["ecu"]["torque_status"] = int(vals[i])
+        i += 1
+
+        # ── SECTION 14: 1-byte pad before the 8×flo/fli/fro/fri/blo/bli/bro/bri floats ─
+        i += 1
+
+        # ── SECTION 15: 32 temperature readings (flo0…fri7) ─────────────────────────
+        temps_32 = vals[i : i + 32]
+        i += 32
+        # it goes fl_temperature (0-7), fr_temperature (0-7),
+        # bl_temperature (0-7), br_temperature (0-7)
+        dest["corners"][0]["wheel_temperature"][:] = temps_32[0:8]  # fl
+        dest["corners"][1]["wheel_temperature"][:] = temps_32[8:16]  # fr
+        dest["corners"][2]["wheel_temperature"][:] = temps_32[16:24]  # bl
+        dest["corners"][3]["wheel_temperature"][:] = temps_32[24:32]  # br
+
+        # ── SECTION 16: 12 floats: fl_*, fr_*, bl_*, br_* (3 per corner) ────────────
+        corners_12 = vals[i : i + 12]
+        i += 12
+        # assign in order: fl_speed, fl_disp, fl_load, fr_…, bl_…, br_…
+        keys = [
+            ("corners", 0, "wheel_speed"),
+            ("corners", 0, "wheel_displacement"),
+            ("corners", 0, "pr_strain"),
+            ("corners", 1, "wheel_speed"),
+            # … etc. repeat for corners 1,2,3 …
+        ]
+        for (blk, idx, key), v in zip(keys, corners_12):
+            dest[blk][idx][key] = v
+
+        # ── SECTION 17: File & LUT metadata (4×uint8 + …) ──────────────────────────
+        # # (we don’t store this in CarDB, so we skip it)
+        # (4×uint8 + 1 bool + 1×pad + 1×int16 + 1×uint8 + 2×bool)
+        i += 4
+
+
+        # # ── SECTION 18: 30 × (int16 x_n, float y_n) ───────────────────────────────
+        # # (we don’t store this in CarDB, so we skip it)
+        i += 30 * 4 # int16, two pads, float
+
+        # ── SECTION 19: 3 floats: acceleration & angular speed ─────────────────────────────────────
+        dest["dynamics"]["imu"]["accel"] = vals[i : i + 3]
         i += 3
-        torque = vals[i]
+
+        # ── SECTION 20: 3 floats: angular speed ────────────────────────────────────
+        dest["dynamics"]["imu"]["vel"] = vals[i : i + 3]
+        i += 3
+
+        # ── SECTION 21: 8 floats: air_speed_0…7 ────────────────────────────────────
+        dest["dynamics"]["air_speed"] = vals[i : i + 8]
+        i += 8
+
+        # ── SECTION 22: 2 floats: flow rates ───────────────────────────────────────
+        dest["dynamics"]["coolant_flow"] = vals[i]
+        i += 2
+
+        # ── SECTION 23: 2 floats : coolant temperatures ─────────────────────────────
+        dest["dynamics"]["coolant_temps"] = vals[i : i + 2]
+        i += 2
+
+        # ── SECTION 23: unix timestamp & lat/lon ───────────────────────────────────
+        dest["time"]["unix_time"] = vals[i]
+        i += 1
+        dest["dynamics"]["gps_location"][:] = vals[i : i + 2]
+        i += 2
+
+        # skip the statuses
+        i += 23
+
+
+        # ── SECTION 25: pad (2 bytes) before steering_angle ─────────────────────────
+        i += 2
+
+        # ── SECTION 26: steering_angle & then the 80+140 BMS arrays ────────────────
+        dest["dynamics"]["steering_angle"] = vals[i]
         i += 1
 
-        dest["ecu"]["pump_duty_cycle"] = pumpDuty
-        dest["ecu"]["fan_duty_cycle"] = fanDuty
-        dest["ecu"]["active_aero_state"] = bool(aeroSt)
-        dest["ecu"]["active_aero_position"] = aeroPos
-        dest["ecu"]["accel_lut_id_response"] = int(lutID)
-        dest["pdm"]["reset_gen_efuse"] = bool(rGen)
-        dest["pdm"]["reset_ac_efuse"] = bool(rAC)
-        dest["ecu"]["igbt_temp_limiting"] = bool(il)
-        dest["ecu"]["battery_temp_limiting"] = bool(bl)
-        dest["ecu"]["motor_temp_limiting"] = bool(ml)
-        dest["ecu"]["torque_status"] = int(torque)
 
-        # ── 12) skip 32 + 12 floats + 4 bytes + 60 values + 3+3+8+2+2 values + 1+2+2+3+3+4+3+3+4+1 values ─
-        skip = (
-            32
-            + 12
-            + 4
-            + 60
-            + (3 + 3 + 8 + 2 + 2)
-            + (1 + 2 + 2 + 3 + 3 + 4 + 3 + 3 + 4 + 1)
-        )
-        i += skip
-
-        # ── 13) finally: BMS cell temps & voltages ─────────────────────────────
-        temps = vals[i : i + NUM_TEMP_CELLS]
+        # store cell temperatures and voltages
+        dest["bms"]["cell_temps"][:] = vals[i : i + NUM_TEMP_CELLS]
         i += NUM_TEMP_CELLS
-        volts = vals[i : i + NUM_VOLT_CELLS]
-        dest["bms"]["cell_temps"][:] = temps
-        dest["bms"]["cell_voltages"][:] = volts
+        dest["bms"]["cell_voltages"][:] = vals[i : i + NUM_VOLT_CELLS]
+        i += NUM_VOLT_CELLS   
+        
+        # stored it again, whoopsies
+        i += NUM_TEMP_CELLS + NUM_VOLT_CELLS
 
-        # skip the duplicated 80+140 floats at the end
-        # (they are already in the CarDB schema, so we don't need to decode them again)
-        i += 80 + 140
+        # ── FINAL CHECK ──────────────────────────────────────────────────────────────
+        if i != len(vals):
+            raise ValueError(f"Decoded {i} of {len(vals)} values")
 
     def parse(self, filename: str) -> CarDB:
         # print(f"DriveBusData format: {DRIVE_FMT}, size {LINE_SIZE} bytes")
@@ -205,6 +300,7 @@ class FullDAQParser(BaseParser):
             )
 
         n = len(data) // LINE_SIZE
+        print(f"Parsing {n} records from {filename} ({len(data)} bytes)")
         db = CarDB(n)
         mv = memoryview(data)
         for idx in range(n):

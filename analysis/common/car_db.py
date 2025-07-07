@@ -155,6 +155,7 @@ corner_dtype = np.dtype(
         ("raw_sus_displacement", "f4"),
         ("wheel_displacement", "f4"),
         ("pr_strain", "f4"),
+        ("wheel_temperature", "f4", 8),
     ]
 )
 

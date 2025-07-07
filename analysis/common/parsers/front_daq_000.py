@@ -68,12 +68,22 @@ class FrontDAQParser(BaseParser):
         dest["time"]["time_since_startup"] = vals[i]
         i += 1
 
-        # BMS + ECU faults (13 bools)
-        dest["bms"]["faults"][:] = vals[i : i + BMS_FAULT_COUNT]
+        # ── BMS + ECU faults ─────────────────────────
+        dest["bms"]["fault_summary"] = vals[i]
+        dest["bms"]["undervoltage_fault"] = bool(vals[i + 1])
+        dest["bms"]["overvoltage_fault"] = bool(vals[i + 2])
+        dest["bms"]["undertemperature_fault"] = bool(vals[i + 3])
+        dest["bms"]["overtemperature_fault"] = bool(vals[i + 4])
+        dest["bms"]["overcurrent_fault"] = bool(vals[i + 5])
+        dest["bms"]["external_kill_fault"] = bool(vals[i + 6])
+        dest["bms"]["open_wire_fault"] = bool(vals[i + 7])
+        i += BMS_FAULT_COUNT
+
+
         dest["ecu"]["implausibilities"][:] = vals[
-            i + BMS_FAULT_COUNT : i + BMS_FAULT_COUNT + ECU_FAULT_COUNT
+            i : i + ECU_FAULT_COUNT
         ]
-        i += BMS_FAULT_COUNT + ECU_FAULT_COUNT + 0  # pad skipped by struct
+        i += ECU_FAULT_COUNT
 
         # 22 floats
         hv, lv, batT, maxT, minT, maxV, minV, maxDis, maxReg, soc, *rest = vals[
