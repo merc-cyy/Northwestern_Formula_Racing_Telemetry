@@ -1,4 +1,4 @@
-# Narthwestern Formula Racing Organization
+# Northwestern Formula Racing Organization
 
 ## Authors
 - Mercy Muiruri
