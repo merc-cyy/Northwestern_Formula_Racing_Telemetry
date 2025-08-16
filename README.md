@@ -15,20 +15,27 @@ This repository contains:
 1. the code to map the analog data from car sensors to a Python relational database.
 2. our frontend visualization interface that represented data from the database.
 
+### Technical Skills
+- CSV
+- ETL pipelines
+- Pandas
+- Object-Relational Mapping
+- SQL
 
 ### Challenges faced
 One of the main challenges when building this project was that we had so much data coming in from the car and it was all in a stream of 1s and 0s. We also had many drive days (one linked here!) and each drive of the car, produced thousands of rows of data.
 
 It was difficult for people who were not involved in the actual hardware engineering of the sensors to work with that data since it kept on changing and it was completely unreadable from a human's perspective. We needed to find a way to stream this data into a standardized schema to be used in our visualization interface.
 
-
 ### Solution and Technical Skills demonstrated
-With guidance from upperclassmen, I used the following technical skills to build a low-level OS layer that converted the binary data to a SQL relational database.
+With guidance from upperclassmen, I used the following technical skills to build a low-level layer that converted the binary data to a SQL relational database.
 - _Command-line scripts_: Implemented CLI commands to batch process of raw binary telemetry logs
 - _File Iteration & Parsing_: Loops through all binary log files within a specified directory, reading byte-level sensor data streams.
 - _Schema Mapping_: Applied a predefined SQL schema to map raw bytes to their corresponding sensor measurements (e.g., brake pressure, RPM, temperature).
 - _Analog-to-Digital Interpretation_: Interpreted continuous analog sensor signals, which were digitized and stored in binary format, into human-readable engineering units.
 - _Structured CSV Output_: Converted the parsed and mapped binary data into tabular CSV format, maintaining time-series alignment for each sensor channel.
+
+  
 
 # Technical Guide
 daq-analysis-25
